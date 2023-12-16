@@ -1,0 +1,35 @@
+---
+title: Code + Synthetic Data for "Online trend estimation and detection of trend deviations in sub-sewershed time series of SARS-CoV-2 RNA measured in wastewater"
+---
+
+This website provides details on the application of the state-space modeling and statistical process control frameworks to the time series of Sars-cov2 viral load for various sampling sites in the City of Houston.
+
+The purpose of this analysis is to develop a method that
+
+-   compares series from two different sampling sites
+
+-   accounts for measurement error
+
+-   is comparable to the existing B-spline method employed by the City.
+
+Intended audience: those who wish to replicate the analyses demonstrated here on their own WW epi data.
+
+::: {.callout-note collapse="'false'"}
+## Assumed knowledge + resources to fill gaps
+
+-   ability to interpret algebraic equations
+
+-   basic familiarity with R programming
+
+    -   Suggested external learning resource: [R for Data Science 2E](https://r4ds.hadley.nz/) by Hadley Wickham, Mine Çetinkaya-Rundel, and Garrett Grolemund.
+
+-   an understanding of linear regression
+
+    -   Suggested external learning resource: [Chapter 7](https://openintro-ims.netlify.app/model-slr.html) of [Introduction to Modern Statistics](https://openintro-ims.netlify.app/index.html) by Mine Çetinkaya-Rundel and Johanna Hardin.
+
+-   a willingness to learn some basic time series techniques.
+
+    -   Suggested external learning resource: [Time Series: A Data Analysis Approach Using R](https://www.stat.pitt.edu/stoffer/tsda/) by Robert Shumway and David Stoffer.
+
+    -   Suggested external learning resource: [Forecasting: Principles and Practice 3E](https://otexts.com/fpp3/) by Rob J Hyndman and George Athanasopoulos.
+:::

@@ -1,0 +1,28 @@
+project:
+  type: book
+
+book:
+  title: "Online trend estimation and detection of deviations"
+  author: "Julia Schedler"
+  date: "9/26/2023"
+  chapters:
+    - href: index.qmd
+      text: "Home"
+    - part: "Trend Estimation"
+      chapters:
+        - href: Algorithm1.qmd
+          text: "Algorithm 1"
+    - part: "Detection of Deviations"
+      chapters:
+        - href: Algorithm2.qmd
+          text: "Algorithm 2"
+
+format:
+  html:
+    theme: cosmo
+    number-sections: false
+  pdf:
+    documentclass: scrreprt
+
+editor: visual
+

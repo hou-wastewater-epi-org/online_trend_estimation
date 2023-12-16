@@ -1,0 +1,500 @@
+# Algorithm 1
+
+This code depends on just a few packages.
+
+```{r}
+#| label: setup
+#| output: false
+
+library(tidyverse)
+library(imputeTS)
+library(KFAS)
+```
+
+## 1. Data Processing {#sec-step1}
+
+We summarize our data cleaning process below to serve as an example, but the data cleaning needs will be different depending on the particulars of the wastewater surveillance system.
+
+-   **inputs:** raw lab values of viral load observations
+
+-   **data processing steps:**
+
+    -   identify observations below the level of detection using statistical analysis
+
+    -   align all observations to Mondays
+
+    -   transform copies per L to a log10 scale
+
+    -   average replicates to give one weekly measurement per week per location
+
+    -   only use locations where the primary WWTP has at least 85% coverage and observations within 1 month of last date
+
+    -   ensure there is a row for each week, even if the observation is missing
+
+    -   create an indicator of missing values
+
+    -   remove irrelevant features/variables
+
+-   **output:** a data frame with four variables:
+
+    -   date
+
+    -   name of location
+
+    -   log10 copies per/L
+
+    -   missing data indicator
+
+```{r}
+#| label: show-data
+
+# load the cleaned/prepped data
+all_ts_observed <- read.csv("Data/synthetic_ww_time_series.csv")
+all_ts_observed$dates <- as.Date(all_ts_observed$dates)
+head(all_ts_observed)
+
+```
+
+## 2. Initialize Model {#sec-step2}
+
+The state space model we are fitting needs a certain number of observations to initialize the model. Sometimes this is called the "burnin" period. We have found that about 10 weeks of complete observations are necessary to obtain a good model fit. However, since some of the sampling locations have missing data at the beginning of the series, we set the burnin period to 15 weeks for all series. The code chunk below identifies the dates which will be considered part of the burnin period.
+
+```{r}
+#| label: burnin
+
+
+burnin <- 15
+date_burnin <- all_ts_observed %>% dplyr::filter(name == 'WWTP') %>% dplyr::select(dates) %>% dplyr::nth(burnin) %>% dplyr::pull(dates)
+init_vals <- c(1, .1) ## set observation variance to be larger than state variance. 
+
+```
+
+## 3. Online Estimates {#sec-step3}
+
+The model is fit using the KFAS package in R, which can fit any state space model, not just our smoothing spline model. However, KFAS does not use rolling estimation.
+
+We have written wrapper functions which fits the smoothing spline state space model and which performs the rolling estimation.
+
+::: {.callout-note collapse="true"}
+### `KFAS_rolling_estimation.r` and `KFAS_state_space_spline.r`
+
+State space spline using `KFAS::fitSSM` . Note the specification of matrices-- this is what gives the smoothing spline structure. Different choice of matrices will give a different model structure, e.g. AR(1), ARIMA, etc.
+
+```{r, file = "Code/KFAS_state_space_spline.r"}
+#| eval: false
+#| code-fold: false
+#| label: KFAS-state-space-spline
+```
+
+Rolling estimation code: Note that this calls `KFAS_state_space_spline.r` multiple times: once for the initialization using the burnin period set above, and the once for each subsequent time point.
+
+```{r, file = "Code/KFAS_rolling_estimation.r"}
+#| eval: false
+#| code-fold: false
+#| label: KFAS-rolling_estimation
+```
+:::
+
+With these functions, we can fit the model.
+
+```{r}
+#| label: fit-model
+#| cache: false
+
+## source the custom functions
+source("Code/KFAS_state_space_spline.R")
+source("Code/KFAS_rolling_estimation.R")
+
+## Rolling estimation for each series
+fits_rolling_KFAS <- all_ts_observed %>%
+  dplyr::group_nest(name, keep = T) %>% 
+  tibble::deframe() %>% 
+  purrr::map(., ~ {
+      KFAS_rolling_estimation(ts_obs_roll= .x$value,
+                              init_vals_roll = burnin,
+                              ts_name_roll = .x$name,
+                              dates_roll = .x$dates,
+                              ts.missing_roll = .x$ts_missing,
+                              init.par_roll = c(1,.2))
+  })
+
+save(fits_rolling_KFAS, file = "Data/fits_rolling_KFAS")
+```
+
+The online estimates can be extracted from the output of `KFAS_rolling_estimation` function by selecting rows with `fit == filter` (online estimates are called filter estimates in the time series literature, so we preserve this vocabulary in the implementation).
+
+```{r}
+#| label: online-fits-rolling
+
+online_estimates <- fits_rolling_KFAS %>% dplyr::bind_rows() %>% dplyr::filter(fit == "filter")
+head(online_estimates)
+
+```
+
+::: {.callout-note collapse="true"}
+## One-step-ahead estimates
+
+In state space models, in addition to obtaining the best estimate of "today's" state based on data through "today", the one-step-ahead forecasts can also be obtained: The estimate of tomorrow's state based on data through today.
+
+The KFAS package makes this estimation simple. The function `KFAS_state_space_spline.R` can be augmented to return the one-step-ahead predictions from the `KFS` function by accessing the element `a`, i.e. `KFS(fit_mod$model)$a`
+:::
+
+## 4. Retrospective Estimates {#sec-step4}
+
+The `KFAS_rolling_estimation` function also computes the retrospective estimates. They can be extracted by selecting rows with `fit == smoother` (retrospective estimates are called smoother estimates in the time series literature. This is true is for any state space model, not just those that have a smoothing spline structure).
+
+```{r}
+#| label: retro-fits
+
+retro_estimates <- fits_rolling_KFAS %>% dplyr::bind_rows() %>% dplyr::filter(fit == "smoother")
+head(retro_estimates)
+
+```
+
+## 5. Verify model fit {#sec-step5}
+
+### Convergence
+
+All fitted models should be checked for convergence. The code below creates visualizations of the convergence code outputted by the **`optim`** function, which is the underlying function that actually performs the model fitting. All of our models fit, so the plots below show that all models (one for each time point after burnin) have converged.
+
+```{r}
+#| label: check-conv
+#| eval: true
+#| echo: false
+
+convergence_plots <- fits_rolling_KFAS %>% 
+                        dplyr::bind_rows() %>% 
+                        dplyr::filter(fit == "filter" & date >= date_burnin) %>%
+                        dplyr::group_nest(name, keep = T) %>%
+                        tibble::deframe() %>%
+                        purrr::map(., ~{
+                          ggplot2::ggplot(.x, aes(x = date, y = conv)) + 
+                              ggplot2::geom_point() + 
+                              ggplot2::xlim(min(.x$date), max(.x$date) + 100) +
+                              ggplot2::geom_segment(x = min(.x$date), xend = max(.x$date), y = 0, yend = 0) + 
+                              ggplot2::annotate("text", x = max(.x$date) + 50, y = 0, label = "Converged")+
+                              ggplot2::geom_segment(x = min(.x$date), xend = max(.x$date), y = 1, yend = 1) + 
+                              ggplot2::annotate("text", x = max(.x$date) + 50, y = 2, label = "maxit reached")+
+                              ggplot2::geom_segment(x = min(.x$date), xend = max(.x$date), y = 10, yend = 10) + 
+                              ggplot2::annotate("text", x = max(.x$date) + 55, y = 10, label = "Nelder-Mead \n degeneracy")+
+                              ggplot2::geom_segment(x = min(.x$date), xend = max(.x$date), y = 51, yend = 51) + 
+                              ggplot2::annotate("text", x = max(.x$date) + 60, y = 50, label = "L-BFGS-B Warning")+
+                              ggplot2::geom_segment(x = min(.x$date), xend = max(.x$date), y = 52, yend = 52) + 
+                              ggplot2::annotate("text", x = max(.x$date) + 65, y = 53, label = "L-BFGS-B Error") +
+                            ggplot2::ylab("Convergence Code")
+                        })
+```
+
+#### Visuals
+
+Since the models for all the stations do fit well, the below visualizations all look the same. If this were not the case, these visuals are intended to help show if particular intervals of time are failing to converge, which may help with troubleshooting. See the "Troubleshooting model convergence" below for an example of how the plots would look if the estimation of a model failed to converge.
+
+::: panel-tabset
+```{r}
+#| label: convergence-plots
+#| warning: true
+#| results: asis
+#| eval: true
+
+purrr::iwalk(convergence_plots, ~{
+  cat('##### ', .y, '\n\n')
+  
+  print(.x)
+  
+  cat('\n\n')
+})
+
+```
+:::
+
+::: {.callout-note collapse="true"}
+## Troubleshooting model convergence (hypothetical example)
+
+If any of the models have not converged, you should not use the output of those models. Here's an example of what the above plots might look like if the model has not converged for some dates. In the hypothetical example below, the `maxit` parameter should be increased for the dates with error code 1 and the model corresponding to the date which gave error code 10 should be explored-- perhaps there is a lot of missing data or an error was made in the data cleaning step, resulting in extreme values. Note that the `L-BFGS-B` error codes will only show up if the optimization method is changed to `L-BFGS-B.`
+
+```{r}
+#| label: conv-example
+#| echo: true
+#| eval: true
+
+example <- fits_rolling_KFAS %>% dplyr::bind_rows() %>% dplyr::filter(fit == "filter" & date >= date_burnin & name == "WWTP") 
+example$conv[25:31] <- 1
+example$conv[45] <- 10
+
+  ggplot2::ggplot(example, aes(x = date, y = conv)) + 
+                              ggplot2::geom_point() + 
+                              ggplot2::xlim(min(example$date), max(example$date) + 100) +
+                              ggplot2::geom_segment(x = min(example$date), xend = max(example$date), y = 0, yend = 0) + 
+                              ggplot2::annotate("text", x = max(example$date) + 50, y = 0, label = "Converged")+
+                              ggplot2::geom_segment(x = min(example$date), xend = max(example$date), y = 1, yend = 1) + 
+                              ggplot2::annotate("text", x = max(example$date) + 50, y = 2, label = "maxit reached")+
+                              ggplot2::geom_segment(x = min(example$date), xend = max(example$date), y = 10, yend = 10) + 
+                              ggplot2::annotate("text", x = max(example$date) + 55, y = 10, label = "Nelder-Mead \n degeneracy")+
+                              ggplot2::geom_segment(x = min(example$date), xend = max(example$date), y = 51, yend = 51) + 
+                              ggplot2::annotate("text", x = max(example$date) + 60, y = 50, label = "L-BFGS-B Warning")+
+                              ggplot2::geom_segment(x = min(example$date), xend = max(example$date), y = 52, yend = 52) + 
+                              ggplot2::annotate("text", x = max(example$date) + 65, y = 53, label = "L-BFGS-B Error") +
+                            ggplot2::ylab("Convergence Code")  
+                            
+```
+
+If `example` is the value of `online_estimates`for one location, the dates corresponding to models with convergence issues can be returned using the following code snippet.
+
+```{r}
+#| label: return-issues
+#| eval: true
+
+example %>% dplyr::filter(conv >0) %>% dplyr::pull(date, conv)
+```
+:::
+
+### Residuals
+
+The visualization of the autocorrelation function (ACF) of the WWTP residuals demonstrates the residuals (observed value - filter estimate) of the state space model show a lack of temporal autocorrelation, meaning that the model adequately accounts for the temporal dependence in the WWTP series. For more on using ACF plots see Chapter 2 of ASTSA.
+
+In support of the conclusion from the ACF plot, the Portmanteau Ljung-Box test fails to reject the null hypothesis that the autocorrelations are not significantly different from 0, meaning there is no evidence to suggest the residuals are not independent.
+
+```{r}
+#| eval: true
+#| label: residuals
+#| code-fold: true
+#| message: false
+
+
+resid <- fits_rolling_KFAS$`WWTP` %>%  ## just look at the WWTP
+        dplyr::filter(date > date_burnin & fit == "filter") %>% ## filter estimates beyond burnin
+        dplyr::mutate(resid = obs-est) %>% dplyr::pull()# calcualte residual
+
+# Ljung-Box test
+LB_test <- Box.test(resid, type = "Ljung-Box")
+
+# make acf plot
+#resid %>% acf1(main = "Autocorrleation plot for Resid = 69th St. Observed - 69th St. Filter", ylab="Autocorrelation") %>% 
+#text(x = 1, y = .35, labels = paste("Portmanteau test p-value#: ", round(LB_test$p.value, 4)))
+```
+
+::: {.callout-note collapse="true"}
+## Residual plots for all series
+
+```{r}
+#| eval: true
+#| echo: true
+#| output: true
+
+TS <- fits_rolling_KFAS %>%
+    dplyr::bind_rows() %>%
+    dplyr::filter(fit == "filter" & date >= date_burnin & name == "WWTP") 
+
+resid <- zoo::na.approx(TS$resid)
+ Box.test(resid, type = "Ljung-Box")
+ par(mfrow = c(2,1))
+ forecast::Acf(resid, main = paste(TS$name[1], ": ACF"))
+ forecast::Pacf(resid, main = paste(TS$name[1], ": PACF"))
+ par(mfrow = c(1,1))
+
+resid_plots <- fits_rolling_KFAS %>%
+                        dplyr::bind_rows() %>%
+                        dplyr::filter(fit == "filter" & date >= date_burnin) %>%
+                        dplyr::group_nest(name, keep = T) %>%
+                        tibble::deframe() %>%
+                        purrr::map(., ~{
+
+                ## impute missing values in .x$obs using
+                        est.Impute <- .x$est
+                        est.Impute[.x$ts_missing] <- NA
+                        est.Impute <- forecast::na.interp(est.Impute)
+                          ## Replace NA in obs series
+                          obs <- .x$obs
+                          obs[.x$ts_missing] <- est.Impute[.x$ts_missing]
+
+
+                          resid = obs - .x$est
+
+                          LB_test <- Box.test(resid, type = "Ljung-Box")
+                          # forecast::Acf(resid,
+                          #           ylab="Autocorrelation",
+                          #           main = paste(.x$name[1]), "ACF")
+                          # forecast::Pacf(resid,
+                          #           ylab="Autocorrelation",
+                          #           main = paste(.x$name[1], "PACF"))
+                        })
+
+```
+
+#### Visuals
+
+::: panel-tabset
+```{r}
+#| label: resid-plots
+#| warning: false
+#| results: asis
+#| eval: true
+#| echo: false
+
+purrr::iwalk(resid_plots, ~{
+  cat('##### ', .y, '\n\n')
+  
+  print(.x)
+  
+  cat('\n\n')
+})
+
+```
+:::
+:::
+
+## 6. Compare the variances {#sec-step6}
+
+As mentioned above, the parameters we estimate in order to obtain the filters and smoothers above are the state and observation variance terms. The table below provides the estimate of the state and observation variances for the final time point of each series. The plots below visualize the estimates for each in time for each series.
+
+```{r}
+#| label: var_est
+#| code-fold: true
+par_est_plots <- fits_rolling_KFAS %>% dplyr::bind_rows() %>%
+                  dplyr::mutate(colors = rep(c("#332288", "#AA4499","#44AA99","#88CCEE", "#DDCC77"), each = 95*2)) %>%
+                 dplyr::filter(fit == "filter" & date >date_burnin) %>%
+                 tidyr::pivot_longer(cols = c("sigv", "sigw"), names_to = "par", values_to = "var_est") %>%
+                 dplyr::group_nest(name, keep = T) %>%
+                 tibble::deframe() %>% 
+                 purrr::map(., ~{
+                    ggplot2::ggplot(.x, aes(x = date, y = var_est, lty = par)) + 
+                      ggplot2::geom_line(col = .x$colors[1]) +
+                      ggplot2::theme_minimal() + 
+                      ggplot2::scale_linetype_manual(values = c(4,1), labels = c("Observation", "State"))+ 
+                      ggplot2::labs(linetype = "Parameter", x = "Date", y = "Parameter estimate", title = "Variance Estimates")
+                          #missing_dates_lwr <- unique(.x$date[which(.x$ts_missing)])
+                  #missing_dates_upr <- unique(.x$date[which(.x$ts_missing)+1])[1:length(missing_dates_lwr)]
+        
+                  #p+ geom_vline(xintercept = missing_dates_lwr)
+                 }) 
+
+## Final variance estimates
+fits_rolling_KFAS %>% dplyr::bind_rows() %>% dplyr::filter(fit == "filter" & date == "2023-03-13") %>% dplyr::select(name, sigv, sigw)
+```
+
+::: {.callout-note collapse="true"}
+## Variance visualizations
+
+#### Visuals
+
+::: panel-tabset
+```{r}
+#| results: asis
+#| warning: false
+#| label: variance-tabs
+
+purrr::iwalk(par_est_plots, ~ {
+  cat('##### ', .y, '\n\n')
+  
+  print(.x)
+  
+  cat('\n\n')
+  
+})
+```
+:::
+:::
+
+## 7. Visualize estimates {#sec-step7}
+
+### Filter estimates
+
+```{r}
+#| code-fold: true
+#| message: false
+#| label: filter-visuals
+#state filter?
+
+library(ggplot2)
+library(tidyverse)
+source("Code/fplot.R")
+load("Data/fits_rolling_KFAS")
+# plotting the smoothers for all the series
+filter_plots <- fits_rolling_KFAS %>% dplyr::bind_rows() %>%
+          dplyr::mutate(colors = rep(c( "#AA4499","#44AA99","#88CCEE", "#DDCC77", "#332288"), each = 95*2)) %>%
+          dplyr::filter(name != "WWTP" & fit == "filter" & date > date_burnin) %>%
+          dplyr::group_nest(name, keep = T) %>% 
+          tibble::deframe() %>%
+          purrr::map(., ~ {
+            plot.dat <- dplyr::bind_rows(dplyr::filter(fits_rolling_KFAS$`WWTP`, fit == "filter" & date > date_burnin), .x)
+                        plot.dat$name <- factor(plot.dat$name, levels(factor(plot.dat$name))[2:1])
+            #fplot(f= plot.dat, title_char = "Comparison of filter estimates for two locations", line_colors = c( "#332288", .x$colors[1]))
+            ggplot2::ggplot(plot.dat, aes(x = date, y = est, color = name, fill = name)) +
+             ggplot2::geom_line(linewidth=2) +
+
+        ggplot2::theme_minimal()+
+
+
+        ggplot2::geom_ribbon(aes(ymin=lwr,ymax=upr),alpha=.2) +
+
+        ggplot2::scale_color_manual(values = c("#332288", .x$colors[1])) +
+
+        ggplot2::scale_fill_manual(values = c(paste("#332288", "50", sep = ""), paste(.x$colors[1], "50", sep = "")), guide = "none") +
+                ggplot2::labs(title = "Comparison of filter estimates for two locations", x= "Date", y = "Log10 Copies/L-WW", color = "")
+
+          })
+```
+
+#### Visualizations
+
+::: panel-tabset
+```{r}
+#| results: asis
+#| warning: false
+#| label: filter-tabs
+
+purrr::iwalk(filter_plots, ~ {
+  cat('##### ', .y, '\n\n')
+  
+  print(.x)
+  
+  cat('\n\n')
+  
+})
+
+```
+:::
+
+### Smoother estimates
+
+Like the filter estimates, the smoother estimates have a point estimate and uncertainty estimates visualized. The resulting estimates are indeed smoothed, since the entire series is used to estimate the model at each time point, so the periods of missing data are less pronounced. The 95% confidence bands appear wider for LS that had more missing data. The smoothed estimates are useful for retrospective analyses.
+
+```{r}
+#| code-fold: true
+#| label: smoother-visuals
+#state smoother?
+
+library(ggplot2)
+source("Code/fplot.R")
+# plotting the smoothers for all the series
+smoother_plots <- fits_rolling_KFAS %>% dplyr::bind_rows() %>%
+                  dplyr::mutate(colors = rep(c( "#AA4499","#44AA99","#88CCEE", "#DDCC77", "#332288"), each = 95*2)) %>%
+          dplyr::filter(name != "WWTP" & fit == "smoother"& date > date_burnin) %>%
+          dplyr::group_nest(name, keep = T) %>% 
+          tibble::deframe() %>%
+          purrr::map(., ~ {
+            plot.dat <- dplyr::bind_rows(filter(fits_rolling_KFAS$`WWTP`, fit == "smoother" & date > date_burnin), .x)
+            plot.dat$name <- factor(plot.dat$name, levels(factor(plot.dat$name))[2:1])
+            fplot(f= plot.dat, title_char =  "Comparison of retrospective estimates for two locations", line_colors = c("#332288",.x$colors[1]))
+          })
+```
+
+#### Visualizations
+
+::: panel-tabset
+```{r}
+#| results: asis
+#| warning: false
+#| label: smoother-tabs
+
+purrr::iwalk(smoother_plots, ~ {
+  cat('##### ', .y, '\n\n')
+  
+  print(.x)
+  
+  cat('\n\n')
+  
+})
+
+```
+:::
