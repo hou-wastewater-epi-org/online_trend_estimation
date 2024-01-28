@@ -59,6 +59,7 @@ diff <- y_t-mu_t
 Compute the (approximate) standard deviation of the q1. Standardize the difference series by dividing by the standard deviation.
 
 ```{r}
+#| lable: variance_approx
 var_y <- fits_rolling_KFAS$`Lift station B` %>% 
           dplyr::filter(date > "2021-08-30" & fit == "filter")%>% 
           dplyr::mutate(var_est = sigv^2) %>% select(var_est)
@@ -83,6 +84,7 @@ standardized_diff <- diff/sqrt(var_est)
 Construct EWMA chart for the standardized difference series.
 
 ```{r}
+#| label: construct-one-ewma-chart
  # compute lag 1 autocorrelation of standardized difference series
   lag1_est <- acf(standardized_diff, plot=F, na.action = na.pass)$acf[2] ## we could do something fancier
   

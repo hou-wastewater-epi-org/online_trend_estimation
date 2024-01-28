@@ -7,6 +7,7 @@ This code depends on just a few packages.
 #| output: false
 
 library(tidyverse)
+library(patchwork) ## to get nice rendered visuals in quarto
 library(KFAS)
 ```
 
@@ -272,24 +273,21 @@ LB_test <- Box.test(resid, type = "Ljung-Box")
 #text(x = 1, y = .35, labels = paste("Portmanteau test p-value#: ", round(LB_test$p.value, 4)))
 ```
 
-::: {.callout-note collapse="true"}
+::: {.callout-note}
 ## Residual plots for all series
 
 ```{r}
+#| label: all-acf-plots
 #| eval: true
 #| echo: true
-#| output: true
+#| message: false
+#| warning: false
+#| output: false
+#| code-fold: true
 
 TS <- fits_rolling_KFAS %>%
     dplyr::bind_rows() %>%
     dplyr::filter(fit == "filter" & date >= date_burnin & name == "WWTP") 
-
-resid <- zoo::na.approx(TS$resid)
- Box.test(resid, type = "Ljung-Box")
- par(mfrow = c(2,1))
- forecast::Acf(resid, main = paste(TS$name[1], ": ACF"))
- forecast::Pacf(resid, main = paste(TS$name[1], ": PACF"))
- par(mfrow = c(1,1))
 
 resid_plots <- fits_rolling_KFAS %>%
                         dplyr::bind_rows() %>%
@@ -298,24 +296,15 @@ resid_plots <- fits_rolling_KFAS %>%
                         tibble::deframe() %>%
                         purrr::map(., ~{
 
-                ## impute missing values in .x$obs using
-                        est.Impute <- .x$est
-                        est.Impute[.x$ts_missing] <- NA
-                        est.Impute <- forecast::na.interp(est.Impute)
-                          ## Replace NA in obs series
-                          obs <- .x$obs
-                          obs[.x$ts_missing] <- est.Impute[.x$ts_missing]
-
-
-                          resid = obs - .x$est
-
-                          LB_test <- Box.test(resid, type = "Ljung-Box")
-                          # forecast::Acf(resid,
-                          #           ylab="Autocorrelation",
-                          #           main = paste(.x$name[1]), "ACF")
-                          # forecast::Pacf(resid,
-                          #           ylab="Autocorrelation",
-                          #           main = paste(.x$name[1], "PACF"))
+                          ## impute missing values in .x$resid
+                          resid = zoo::na.approx(.x$resid)
+                          # compute p-value
+                          LB_test <- stats::Box.test(resid, type = "Ljung-Box")
+                          # create acf and pacf plots
+                          acf <- forecast::ggAcf(resid, main = paste(.x$name[1], ": ACF"))
+                          pacf <- forecast::ggPacf(resid, main = paste(TS$name[1], ": PACF"))
+                          # output single visual for rendering in tabs
+                          acf + pacf + patchwork::plot_annotation(title = paste("Portmanteu p-value: ", round(LB_test$p.value, 4)))
                         })
 
 ```
@@ -326,6 +315,7 @@ resid_plots <- fits_rolling_KFAS %>%
 ```{r}
 #| label: resid-plots
 #| warning: false
+#| message: false
 #| results: asis
 #| eval: true
 #| echo: false
@@ -337,6 +327,20 @@ purrr::iwalk(resid_plots, ~{
   
   cat('\n\n')
 })
+
+```
+
+
+:::
+::: {.callout-note collapse="true"}
+### Why is lift station B showing significant autocorrelation? 
+
+This is cold be due to a linear imputation of almost half of the missing values, which are missing in a big chunk.
+
+```{r}
+#| label: ls-b-missing
+
+all_ts_observed %>% dplyr::group_by(name) %>%dplyr::summarise(missing = sum(ts_missing), total = n(), percent = 100*sum(ts_missing)/n()) %>% dplyr::arrange(desc(percent))
 
 ```
 :::
