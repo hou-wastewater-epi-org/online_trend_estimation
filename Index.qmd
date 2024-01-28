@@ -2,6 +2,14 @@
 title: Code + Synthetic Data for "Online trend estimation and detection of trend deviations in sub-sewershed time series of SARS-CoV-2 RNA measured in wastewater"
 ---
 
+::: {.callout-note collapse="true"}
+## Paper: [Online trend estimation and detection of trend deviations in sub-sewershed time series of SARS-CoV-2 RNA measured in wastewater](https://www.medrxiv.org/content/10.1101/2023.10.26.23297635v1)
+
+Katherine B. Ensor, Julia Schedler, Thomas Sun, Rebecca Schneider, Anthony Mulenga, Jingjing Wu, Lauren B. Stadler, Loren Hopkins
+
+medRxiv 2023.10.26.23297635; doi: [https://doi.org/10.1101/2023.10.26.23297635](https://doi.org/10.1101/2023.10.26.23297635https://doi.org/10.1101/2023.10.26.23297635)
+:::
+
 This website provides details on the application of the state-space modeling and statistical process control frameworks to the time series of Sars-cov2 viral load for various sampling sites in the City of Houston.
 
 The purpose of this analysis is to develop a method that
