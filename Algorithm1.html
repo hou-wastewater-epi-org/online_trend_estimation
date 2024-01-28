@@ -1,0 +1,1392 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.4.382">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Online trend estimation and detection of deviations - Algorithm 1</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./Algorithm2.html" rel="next">
+<link href="./index.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 20,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+</head>
+
+<body class="nav-sidebar floating">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./Algorithm1.html">Trend Estimation</a></li><li class="breadcrumb-item"><a href="./Algorithm1.html"><span class="chapter-title">Algorithm 1</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Online trend estimation and detection of deviations</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Home</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">
+ <span class="menu-text">Trend Estimation</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./Algorithm1.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">Algorithm 1</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">
+ <span class="menu-text">Detection of Deviations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./Algorithm2.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Algorithm 2</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#sec-step1" id="toc-sec-step1" class="nav-link active" data-scroll-target="#sec-step1">1. Data Processing</a></li>
+  <li><a href="#sec-step2" id="toc-sec-step2" class="nav-link" data-scroll-target="#sec-step2">2. Initialize Model</a></li>
+  <li><a href="#sec-step3" id="toc-sec-step3" class="nav-link" data-scroll-target="#sec-step3">3. Online Estimates</a></li>
+  <li><a href="#sec-step4" id="toc-sec-step4" class="nav-link" data-scroll-target="#sec-step4">4. Retrospective Estimates</a></li>
+  <li><a href="#sec-step5" id="toc-sec-step5" class="nav-link" data-scroll-target="#sec-step5">5. Verify model fit</a>
+  <ul class="collapse">
+  <li><a href="#convergence" id="toc-convergence" class="nav-link" data-scroll-target="#convergence">Convergence</a></li>
+  <li><a href="#residuals" id="toc-residuals" class="nav-link" data-scroll-target="#residuals">Residuals</a></li>
+  </ul></li>
+  <li><a href="#sec-step6" id="toc-sec-step6" class="nav-link" data-scroll-target="#sec-step6">6. Compare the variances</a></li>
+  <li><a href="#sec-step7" id="toc-sec-step7" class="nav-link" data-scroll-target="#sec-step7">7. Visualize estimates</a>
+  <ul class="collapse">
+  <li><a href="#filter-estimates" id="toc-filter-estimates" class="nav-link" data-scroll-target="#filter-estimates">Filter estimates</a></li>
+  <li><a href="#smoother-estimates" id="toc-smoother-estimates" class="nav-link" data-scroll-target="#smoother-estimates">Smoother estimates</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./Algorithm1.html">Trend Estimation</a></li><li class="breadcrumb-item"><a href="./Algorithm1.html"><span class="chapter-title">Algorithm 1</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-title">Algorithm 1</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>This code depends on just a few packages.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(patchwork) <span class="do">## to get nice rendered visuals in quarto</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(KFAS)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<section id="sec-step1" class="level2">
+<h2 class="anchored" data-anchor-id="sec-step1">1. Data Processing</h2>
+<p>We summarize our data cleaning process below to serve as an example, but the data cleaning needs will be different depending on the particulars of the wastewater surveillance system.</p>
+<ul>
+<li><p><strong>inputs:</strong> raw lab values of viral load observations</p></li>
+<li><p><strong>data processing steps:</strong></p>
+<ul>
+<li><p>identify observations below the level of detection using statistical analysis</p></li>
+<li><p>align all observations to Mondays</p></li>
+<li><p>transform copies per L to a log10 scale</p></li>
+<li><p>average replicates to give one weekly measurement per week per location</p></li>
+<li><p>only use locations where the primary WWTP has at least 85% coverage and observations within 1 month of last date</p></li>
+<li><p>ensure there is a row for each week, even if the observation is missing</p></li>
+<li><p>create an indicator of missing values</p></li>
+<li><p>remove irrelevant features/variables</p></li>
+</ul></li>
+<li><p><strong>output:</strong> a data frame with four variables:</p>
+<ul>
+<li><p>date</p></li>
+<li><p>name of location</p></li>
+<li><p>log10 copies per/L</p></li>
+<li><p>missing data indicator</p></li>
+</ul></li>
+</ul>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># load the cleaned/prepped data</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>all_ts_observed <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"Data/synthetic_ww_time_series.csv"</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>all_ts_observed<span class="sc">$</span>dates <span class="ot">&lt;-</span> <span class="fu">as.Date</span>(all_ts_observed<span class="sc">$</span>dates)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(all_ts_observed)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>       dates           name    value ts_missing  colors
+1 2021-05-24 Lift station A 3.397031      FALSE #44AA99
+2 2021-05-31 Lift station A       NA       TRUE #44AA99
+3 2021-06-07 Lift station A       NA       TRUE #44AA99
+4 2021-06-14 Lift station A       NA       TRUE #44AA99
+5 2021-06-21 Lift station A 4.543146      FALSE #44AA99
+6 2021-06-28 Lift station A 4.356128      FALSE #44AA99</code></pre>
+</div>
+</div>
+</section>
+<section id="sec-step2" class="level2">
+<h2 class="anchored" data-anchor-id="sec-step2">2. Initialize Model</h2>
+<p>The state space model we are fitting needs a certain number of observations to initialize the model. Sometimes this is called the “burnin” period. We have found that about 10 weeks of complete observations are necessary to obtain a good model fit. However, since some of the sampling locations have missing data at the beginning of the series, we set the burnin period to 15 weeks for all series. The code chunk below identifies the dates which will be considered part of the burnin period.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>burnin <span class="ot">&lt;-</span> <span class="dv">15</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>date_burnin <span class="ot">&lt;-</span> all_ts_observed <span class="sc">%&gt;%</span> dplyr<span class="sc">::</span><span class="fu">filter</span>(name <span class="sc">==</span> <span class="st">'WWTP'</span>) <span class="sc">%&gt;%</span> dplyr<span class="sc">::</span><span class="fu">select</span>(dates) <span class="sc">%&gt;%</span> dplyr<span class="sc">::</span><span class="fu">nth</span>(burnin) <span class="sc">%&gt;%</span> dplyr<span class="sc">::</span><span class="fu">pull</span>(dates)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>init_vals <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span>, .<span class="dv">1</span>) <span class="do">## set observation variance to be larger than state variance. </span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="sec-step3" class="level2">
+<h2 class="anchored" data-anchor-id="sec-step3">3. Online Estimates</h2>
+<p>The model is fit using the KFAS package in R, which can fit any state space model, not just our smoothing spline model. However, KFAS does not use rolling estimation.</p>
+<p>We have written wrapper functions which fits the smoothing spline state space model and which performs the rolling estimation.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<code>KFAS_rolling_estimation.r</code> and <code>KFAS_state_space_spline.r</code>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>State space spline using <code>KFAS::fitSSM</code> . Note the specification of matrices– this is what gives the smoothing spline structure. Different choice of matrices will give a different model structure, e.g.&nbsp;AR(1), ARIMA, etc.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>KFAS_state_space_spline <span class="ot">&lt;-</span> <span class="cf">function</span>(ts_obs, name, ts.missing, ts_dates, init_par){</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="do">## Specify model structure</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>A <span class="ot">=</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">0</span>),<span class="dv">1</span>)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>Phi <span class="ot">=</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">2</span>,<span class="dv">1</span>,<span class="sc">-</span><span class="dv">1</span>,<span class="dv">0</span>),<span class="dv">2</span>)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>mu1 <span class="ot">=</span> <span class="fu">matrix</span>(<span class="dv">0</span>,<span class="dv">2</span>) </span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>P1 <span class="ot">=</span> <span class="fu">diag</span>(<span class="dv">1</span>,<span class="dv">2</span>)</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>v <span class="ot">=</span> <span class="fu">matrix</span>(<span class="cn">NA</span>) </span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>R <span class="ot">=</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">0</span>),<span class="dv">2</span>,<span class="dv">1</span>)</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>w <span class="ot">=</span> <span class="fu">matrix</span>(<span class="cn">NA</span>) </span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="co">#function for updating the model</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>update_model <span class="ot">&lt;-</span> <span class="cf">function</span>(pars, model) {</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>  model[<span class="st">"H"</span>][<span class="dv">1</span>] <span class="ot">&lt;-</span> pars[<span class="dv">1</span>]</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>  model[<span class="st">"Q"</span>][<span class="dv">1</span>] <span class="ot">&lt;-</span> pars[<span class="dv">2</span>]</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>  model</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a><span class="co">#check that variances are non-negative</span></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>check_model <span class="ot">&lt;-</span> <span class="cf">function</span>(model) {</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>  (model[<span class="st">"H"</span>] <span class="sc">&gt;</span> <span class="dv">0</span> <span class="sc">&amp;&amp;</span> <span class="fu">min</span>(model[<span class="st">"Q"</span>]) <span class="sc">&gt;</span> <span class="dv">0</span>)</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a><span class="co"># Specify the model</span></span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>mod <span class="ot">&lt;-</span> KFAS<span class="sc">::</span><span class="fu">SSModel</span>(ts_obs <span class="sc">~</span> <span class="sc">-</span><span class="dv">1</span> <span class="sc">+</span></span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>                 <span class="fu">SSMcustom</span>(<span class="at">Z =</span> A, <span class="at">T =</span> Phi, <span class="at">R =</span> R, <span class="at">Q =</span> w, <span class="at">a1 =</span> mu1, <span class="at">P1 =</span> P1), <span class="at">H =</span> v)</span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a><span class="co"># Fit the model</span></span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>fit_mod <span class="ot">&lt;-</span> KFAS<span class="sc">::</span><span class="fu">fitSSM</span>(mod, <span class="at">inits =</span> init_par, <span class="at">method =</span> <span class="st">"BFGS"</span>,</span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>                  <span class="at">updatefn =</span> update_model, <span class="at">checkfn =</span> check_model, <span class="at">hessian=</span><span class="cn">TRUE</span>,</span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a>                  <span class="at">control=</span><span class="fu">list</span>(<span class="at">trace=</span><span class="cn">FALSE</span>,<span class="at">REPORT=</span><span class="dv">1</span>))</span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a><span class="do">## Format for output</span></span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a>ts_len <span class="ot">&lt;-</span> <span class="fu">length</span>(ts_obs)</span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a>smoothers <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">est =</span> KFAS<span class="sc">::</span><span class="fu">KFS</span>(fit_mod<span class="sc">$</span>model)<span class="sc">$</span>alphahat[,<span class="dv">1</span>],</span>
+<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a>                  <span class="at">lwr =</span> KFAS<span class="sc">::</span><span class="fu">KFS</span>(fit_mod<span class="sc">$</span>model)<span class="sc">$</span>alphahat[,<span class="dv">1</span>]<span class="sc">-</span> <span class="fl">1.96</span><span class="sc">*</span><span class="fu">sqrt</span>(KFAS<span class="sc">::</span><span class="fu">KFS</span>(fit_mod<span class="sc">$</span>model)<span class="sc">$</span>V[<span class="dv">1</span>,<span class="dv">1</span>,]),</span>
+<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a>                  <span class="at">upr =</span> KFAS<span class="sc">::</span><span class="fu">KFS</span>(fit_mod<span class="sc">$</span>model)<span class="sc">$</span>alphahat[,<span class="dv">1</span>]<span class="sc">+</span> <span class="fl">1.96</span><span class="sc">*</span><span class="fu">sqrt</span>(KFAS<span class="sc">::</span><span class="fu">KFS</span>(fit_mod<span class="sc">$</span>model)<span class="sc">$</span>V[<span class="dv">1</span>,<span class="dv">1</span>,]),</span>
+<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a>                  <span class="at">ts_missing =</span> ts.missing,</span>
+<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a>                  <span class="at">name =</span> <span class="fu">rep</span>(name[<span class="dv">1</span>], <span class="at">times =</span> ts_len),</span>
+<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a>                  <span class="at">fit =</span> <span class="fu">rep</span>(<span class="st">"smoother"</span>, <span class="at">times =</span> ts_len),</span>
+<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a>                  <span class="at">date =</span> ts_dates,</span>
+<span id="cb5-42"><a href="#cb5-42" aria-hidden="true" tabindex="-1"></a>                  <span class="at">sigv =</span> <span class="fu">rep</span>(fit_mod<span class="sc">$</span>optim.out<span class="sc">$</span>par[<span class="dv">1</span>], <span class="at">times =</span> ts_len),</span>
+<span id="cb5-43"><a href="#cb5-43" aria-hidden="true" tabindex="-1"></a>                  <span class="at">sigw =</span> <span class="fu">rep</span>(fit_mod<span class="sc">$</span>optim.out<span class="sc">$</span>par[<span class="dv">2</span>], <span class="at">times =</span> ts_len), </span>
+<span id="cb5-44"><a href="#cb5-44" aria-hidden="true" tabindex="-1"></a>                  <span class="at">obs =</span> ts_obs, </span>
+<span id="cb5-45"><a href="#cb5-45" aria-hidden="true" tabindex="-1"></a>                  <span class="at">resid =</span> <span class="fu">rstandard</span>(KFAS<span class="sc">::</span><span class="fu">KFS</span>(fit_mod<span class="sc">$</span>model), <span class="at">type =</span> <span class="st">"recursive"</span>),</span>
+<span id="cb5-46"><a href="#cb5-46" aria-hidden="true" tabindex="-1"></a>                  <span class="at">conv =</span> fit_mod<span class="sc">$</span>optim.out<span class="sc">$</span>convergence)</span>
+<span id="cb5-47"><a href="#cb5-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-48"><a href="#cb5-48" aria-hidden="true" tabindex="-1"></a>filters <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">est =</span> KFAS<span class="sc">::</span><span class="fu">KFS</span>(fit_mod<span class="sc">$</span>model)<span class="sc">$</span>att[,<span class="dv">1</span>],</span>
+<span id="cb5-49"><a href="#cb5-49" aria-hidden="true" tabindex="-1"></a>           <span class="at">lwr =</span> KFAS<span class="sc">::</span><span class="fu">KFS</span>(fit_mod<span class="sc">$</span>model)<span class="sc">$</span>att[,<span class="dv">1</span>]<span class="sc">-</span> <span class="fl">1.96</span><span class="sc">*</span><span class="fu">sqrt</span>(KFAS<span class="sc">::</span><span class="fu">KFS</span>(fit_mod<span class="sc">$</span>model)<span class="sc">$</span>Ptt[<span class="dv">1</span>,<span class="dv">1</span>,]),</span>
+<span id="cb5-50"><a href="#cb5-50" aria-hidden="true" tabindex="-1"></a>           <span class="at">upr =</span> KFAS<span class="sc">::</span><span class="fu">KFS</span>(fit_mod<span class="sc">$</span>model)<span class="sc">$</span>att[,<span class="dv">1</span>]<span class="sc">+</span> <span class="fl">1.96</span><span class="sc">*</span><span class="fu">sqrt</span>(KFAS<span class="sc">::</span><span class="fu">KFS</span>(fit_mod<span class="sc">$</span>model)<span class="sc">$</span>Ptt[<span class="dv">1</span>,<span class="dv">1</span>,]),</span>
+<span id="cb5-51"><a href="#cb5-51" aria-hidden="true" tabindex="-1"></a>           <span class="at">ts_missing =</span> ts.missing,</span>
+<span id="cb5-52"><a href="#cb5-52" aria-hidden="true" tabindex="-1"></a>           <span class="at">name =</span> <span class="fu">rep</span>(name[<span class="dv">1</span>], <span class="at">times =</span> ts_len),</span>
+<span id="cb5-53"><a href="#cb5-53" aria-hidden="true" tabindex="-1"></a>           <span class="at">fit =</span> <span class="fu">rep</span>(<span class="st">"filter"</span>, <span class="at">times =</span> ts_len),</span>
+<span id="cb5-54"><a href="#cb5-54" aria-hidden="true" tabindex="-1"></a>           <span class="at">date =</span> ts_dates,</span>
+<span id="cb5-55"><a href="#cb5-55" aria-hidden="true" tabindex="-1"></a>           <span class="at">sigv =</span> <span class="fu">rep</span>(fit_mod<span class="sc">$</span>optim.out<span class="sc">$</span>par[<span class="dv">1</span>], <span class="at">times =</span> ts_len),</span>
+<span id="cb5-56"><a href="#cb5-56" aria-hidden="true" tabindex="-1"></a>           <span class="at">sigw =</span> <span class="fu">rep</span>(fit_mod<span class="sc">$</span>optim.out<span class="sc">$</span>par[<span class="dv">2</span>], <span class="at">times =</span> ts_len), </span>
+<span id="cb5-57"><a href="#cb5-57" aria-hidden="true" tabindex="-1"></a>           <span class="at">obs =</span> ts_obs,</span>
+<span id="cb5-58"><a href="#cb5-58" aria-hidden="true" tabindex="-1"></a>           <span class="at">resid =</span> <span class="fu">rstandard</span>(<span class="fu">KFS</span>(fit_mod<span class="sc">$</span>model), <span class="at">type =</span> <span class="st">"recursive"</span>),</span>
+<span id="cb5-59"><a href="#cb5-59" aria-hidden="true" tabindex="-1"></a>           <span class="at">conv =</span> fit_mod<span class="sc">$</span>optim.out<span class="sc">$</span>convergence)</span>
+<span id="cb5-60"><a href="#cb5-60" aria-hidden="true" tabindex="-1"></a><span class="do">## combine it all for output.</span></span>
+<span id="cb5-61"><a href="#cb5-61" aria-hidden="true" tabindex="-1"></a>kfas_fits_out <span class="ot">&lt;-</span> dplyr<span class="sc">::</span><span class="fu">bind_rows</span>(smoothers,filters)</span>
+<span id="cb5-62"><a href="#cb5-62" aria-hidden="true" tabindex="-1"></a><span class="fu">return</span>(kfas_fits_out)</span>
+<span id="cb5-63"><a href="#cb5-63" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Rolling estimation code: Note that this calls <code>KFAS_state_space_spline.r</code> multiple times: once for the initialization using the burnin period set above, and the once for each subsequent time point.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>KFAS_rolling_estimation <span class="ot">&lt;-</span> <span class="cf">function</span>(init_vals_roll, </span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>                               ts_obs_roll,  </span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>                               ts_name_roll,</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>                               dates_roll,</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>                               init.par_roll,</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>                               ts.missing_roll){</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>  <span class="do">## perform initial fit on "burnin" of first init_vals_roll time points </span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>  fits_rolling<span class="ot">&lt;-</span> <span class="fu">KFAS_state_space_spline</span>(<span class="at">ts_obs =</span> ts_obs_roll[<span class="dv">1</span><span class="sc">:</span>init_vals_roll],</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">name =</span> ts_name_roll,                                     </span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">ts.missing =</span> ts.missing_roll[<span class="dv">1</span><span class="sc">:</span>init_vals_roll], </span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">ts_dates =</span> dates_roll[<span class="dv">1</span><span class="sc">:</span>init_vals_roll], </span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">init_par =</span> init.par_roll)</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>  <span class="co"># just keep estimates for dates in burnins</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>  <span class="co"># smoother need not be kept</span></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>  fits_rolling <span class="ot">&lt;-</span> dplyr<span class="sc">::</span><span class="fu">filter</span>(fits_rolling, </span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>                         date <span class="sc">==</span> dates_roll[<span class="dv">1</span><span class="sc">:</span>init_vals_roll], </span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>                         fit <span class="sc">==</span> <span class="st">"filter"</span>)</span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>  <span class="co"># use variance estimates from burnin fit to initialize model for next time point</span></span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>  next.par <span class="ot">&lt;-</span> <span class="fu">c</span>(fits_rolling<span class="sc">$</span>sigv[init_vals_roll], fits_rolling<span class="sc">$</span>sigw[init_vals_roll])</span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>  <span class="do">## perform rolling estimation for each time point</span></span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span>(i <span class="cf">in</span> (init_vals_roll <span class="sc">+</span><span class="dv">1</span>)<span class="sc">:</span><span class="fu">length</span>(ts_obs_roll)){</span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>    <span class="co"># just looking to current time point</span></span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>    ts_partial <span class="ot">&lt;-</span> ts_obs_roll[<span class="dv">1</span><span class="sc">:</span>i]</span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>    <span class="co"># fit the model for the next time point</span></span>
+<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a>    ith_fit <span class="ot">&lt;-</span> <span class="fu">KFAS_state_space_spline</span>(<span class="at">ts_obs =</span> ts_partial,</span>
+<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">name =</span> ts_name_roll, </span>
+<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">ts.missing =</span> ts.missing_roll[<span class="dv">1</span><span class="sc">:</span>i], </span>
+<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">ts_dates =</span> dates_roll[<span class="dv">1</span><span class="sc">:</span>i], </span>
+<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">init_par =</span> next.par)</span>
+<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a>    <span class="co"># save results of model fit</span></span>
+<span id="cb6-38"><a href="#cb6-38" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span>(<span class="fu">exists</span>(<span class="st">"ith_fit"</span>)){</span>
+<span id="cb6-39"><a href="#cb6-39" aria-hidden="true" tabindex="-1"></a>      fits_rolling <span class="ot">&lt;-</span> <span class="fu">rbind</span>(fits_rolling, dplyr<span class="sc">::</span><span class="fu">filter</span>(ith_fit, date <span class="sc">==</span> dates_roll[i], fit <span class="sc">==</span> <span class="st">"filter"</span>))</span>
+<span id="cb6-40"><a href="#cb6-40" aria-hidden="true" tabindex="-1"></a>      <span class="co"># get updated variance estimates for observation and state</span></span>
+<span id="cb6-41"><a href="#cb6-41" aria-hidden="true" tabindex="-1"></a>      next.par <span class="ot">&lt;-</span> <span class="fu">c</span>(ith_fit<span class="sc">$</span>sigv[<span class="fu">nrow</span>(ith_fit)], ith_fit<span class="sc">$</span>sigw[<span class="fu">nrow</span>(ith_fit)])</span>
+<span id="cb6-42"><a href="#cb6-42" aria-hidden="true" tabindex="-1"></a>      <span class="do">## compute smoother at final time point</span></span>
+<span id="cb6-43"><a href="#cb6-43" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span>(i <span class="sc">==</span> <span class="fu">length</span>(ts_obs_roll)){</span>
+<span id="cb6-44"><a href="#cb6-44" aria-hidden="true" tabindex="-1"></a>        fits_rolling <span class="ot">&lt;-</span> <span class="fu">rbind</span>(fits_rolling, dplyr<span class="sc">::</span><span class="fu">filter</span>(ith_fit, fit <span class="sc">==</span> <span class="st">"smoother"</span>))</span>
+<span id="cb6-45"><a href="#cb6-45" aria-hidden="true" tabindex="-1"></a>      }</span>
+<span id="cb6-46"><a href="#cb6-46" aria-hidden="true" tabindex="-1"></a>      <span class="fu">rm</span>(ith_fit)</span>
+<span id="cb6-47"><a href="#cb6-47" aria-hidden="true" tabindex="-1"></a>    }<span class="cf">else</span>{ <span class="do">## I don't know how to error handling, feel free to do a pull request </span></span>
+<span id="cb6-48"><a href="#cb6-48" aria-hidden="true" tabindex="-1"></a>      <span class="fu">print</span>(<span class="fu">rep</span>(<span class="st">"FAIL"</span>, <span class="at">times =</span> <span class="dv">100</span>))</span>
+<span id="cb6-49"><a href="#cb6-49" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb6-50"><a href="#cb6-50" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb6-51"><a href="#cb6-51" aria-hidden="true" tabindex="-1"></a>  <span class="do">## give the user an update once each series' estimation is complete</span></span>
+<span id="cb6-52"><a href="#cb6-52" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(<span class="fu">paste</span>(<span class="st">"Model fit complete: "</span>, ts_name_roll[<span class="dv">1</span>])) </span>
+<span id="cb6-53"><a href="#cb6-53" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(fits_rolling)</span>
+<span id="cb6-54"><a href="#cb6-54" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb6-55"><a href="#cb6-55" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</div>
+</div>
+<p>With these functions, we can fit the model.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="do">## source the custom functions</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">"Code/KFAS_state_space_spline.R"</span>)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">"Code/KFAS_rolling_estimation.R"</span>)</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="do">## Rolling estimation for each series</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>fits_rolling_KFAS <span class="ot">&lt;-</span> all_ts_observed <span class="sc">%&gt;%</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">group_nest</span>(name, <span class="at">keep =</span> T) <span class="sc">%&gt;%</span> </span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  tibble<span class="sc">::</span><span class="fu">deframe</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  purrr<span class="sc">::</span><span class="fu">map</span>(., <span class="sc">~</span> {</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>      <span class="fu">KFAS_rolling_estimation</span>(<span class="at">ts_obs_roll=</span> .x<span class="sc">$</span>value,</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>                              <span class="at">init_vals_roll =</span> burnin,</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>                              <span class="at">ts_name_roll =</span> .x<span class="sc">$</span>name,</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>                              <span class="at">dates_roll =</span> .x<span class="sc">$</span>dates,</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>                              <span class="at">ts.missing_roll =</span> .x<span class="sc">$</span>ts_missing,</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>                              <span class="at">init.par_roll =</span> <span class="fu">c</span>(<span class="dv">1</span>,.<span class="dv">2</span>))</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>  })</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Model fit complete:  Lift station A"
+[1] "Model fit complete:  Lift station B"
+[1] "Model fit complete:  Lift station C"
+[1] "Model fit complete:  Lift station D"
+[1] "Model fit complete:  WWTP"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">save</span>(fits_rolling_KFAS, <span class="at">file =</span> <span class="st">"Data/fits_rolling_KFAS"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The online estimates can be extracted from the output of <code>KFAS_rolling_estimation</code> function by selecting rows with <code>fit == filter</code> (online estimates are called filter estimates in the time series literature, so we preserve this vocabulary in the implementation).</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>online_estimates <span class="ot">&lt;-</span> fits_rolling_KFAS <span class="sc">%&gt;%</span> dplyr<span class="sc">::</span><span class="fu">bind_rows</span>() <span class="sc">%&gt;%</span> dplyr<span class="sc">::</span><span class="fu">filter</span>(fit <span class="sc">==</span> <span class="st">"filter"</span>)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(online_estimates)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>       est      lwr       upr ts_missing           name    fit       date
+1 2.493917 1.483321  3.504513      FALSE Lift station A filter 2021-05-24
+2 4.987834 2.156417  7.819251       TRUE Lift station A filter 2021-05-31
+3 7.481751 2.480884 12.482618       TRUE Lift station A filter 2021-06-07
+4 9.975668 2.752321 17.199016       TRUE Lift station A filter 2021-06-14
+5 4.664197 3.493769  5.834625      FALSE Lift station A filter 2021-06-21
+6 4.709196 3.776564  5.641829      FALSE Lift station A filter 2021-06-28
+       sigv      sigw      obs      resid conv
+1 0.3621268 0.0234552 3.397031  2.9106553    0
+2 0.3621268 0.0234552       NA         NA    0
+3 0.3621268 0.0234552       NA         NA    0
+4 0.3621268 0.0234552       NA         NA    0
+5 0.3621268 0.0234552 4.543146 -1.6277692    0
+6 0.3621268 0.0234552 4.356128 -0.9584143    0</code></pre>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+One-step-ahead estimates
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>In state space models, in addition to obtaining the best estimate of “today’s” state based on data through “today”, the one-step-ahead forecasts can also be obtained: The estimate of tomorrow’s state based on data through today.</p>
+<p>The KFAS package makes this estimation simple. The function <code>KFAS_state_space_spline.R</code> can be augmented to return the one-step-ahead predictions from the <code>KFS</code> function by accessing the element <code>a</code>, i.e.&nbsp;<code>KFS(fit_mod$model)$a</code></p>
+</div>
+</div>
+</div>
+</section>
+<section id="sec-step4" class="level2">
+<h2 class="anchored" data-anchor-id="sec-step4">4. Retrospective Estimates</h2>
+<p>The <code>KFAS_rolling_estimation</code> function also computes the retrospective estimates. They can be extracted by selecting rows with <code>fit == smoother</code> (retrospective estimates are called smoother estimates in the time series literature. This is true is for any state space model, not just those that have a smoothing spline structure).</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>retro_estimates <span class="ot">&lt;-</span> fits_rolling_KFAS <span class="sc">%&gt;%</span> dplyr<span class="sc">::</span><span class="fu">bind_rows</span>() <span class="sc">%&gt;%</span> dplyr<span class="sc">::</span><span class="fu">filter</span>(fit <span class="sc">==</span> <span class="st">"smoother"</span>)</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(retro_estimates)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>       est      lwr      upr ts_missing           name      fit       date
+1 3.173451 2.804721 3.542180      FALSE Lift station A smoother 2021-05-24
+2 3.543552 3.183237 3.903867       TRUE Lift station A smoother 2021-05-31
+3 3.866474 3.488974 4.243975       TRUE Lift station A smoother 2021-06-07
+4 4.135375 3.789807 4.480943       TRUE Lift station A smoother 2021-06-14
+5 4.343412 4.063163 4.623661      FALSE Lift station A smoother 2021-06-21
+6 4.483741 4.231136 4.736346      FALSE Lift station A smoother 2021-06-28
+        sigv      sigw      obs     resid conv
+1 0.04089099 0.0145985 3.397031  3.329637    0
+2 0.04089099 0.0145985       NA        NA    0
+3 0.04089099 0.0145985       NA        NA    0
+4 0.04089099 0.0145985       NA        NA    0
+5 0.04089099 0.0145985 4.543146 -2.817850    0
+6 0.04089099 0.0145985 4.356128 -1.500047    0</code></pre>
+</div>
+</div>
+</section>
+<section id="sec-step5" class="level2">
+<h2 class="anchored" data-anchor-id="sec-step5">5. Verify model fit</h2>
+<section id="convergence" class="level3">
+<h3 class="anchored" data-anchor-id="convergence">Convergence</h3>
+<p>All fitted models should be checked for convergence. The code below creates visualizations of the convergence code outputted by the <strong><code>optim</code></strong> function, which is the underlying function that actually performs the model fitting. All of our models fit, so the plots below show that all models (one for each time point after burnin) have converged.</p>
+<section id="visuals" class="level4">
+<h4 class="anchored" data-anchor-id="visuals">Visuals</h4>
+<p>Since the models for all the stations do fit well, the below visualizations all look the same. If this were not the case, these visuals are intended to help show if particular intervals of time are failing to converge, which may help with troubleshooting. See the “Troubleshooting model convergence” below for an example of how the plots would look if the estimation of a model failed to converge.</p>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-1-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-1" role="tab" aria-controls="tabset-1-1" aria-selected="true" aria-current="page">Lift station A</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-2" role="tab" aria-controls="tabset-1-2" aria-selected="false">Lift station B</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-3-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-3" role="tab" aria-controls="tabset-1-3" aria-selected="false">Lift station C</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-4-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-4" role="tab" aria-controls="tabset-1-4" aria-selected="false">Lift station D</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-5-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-5" role="tab" aria-controls="tabset-1-5" aria-selected="false">WWTP</a></li></ul>
+<div class="tab-content">
+<div id="tabset-1-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-1-1-tab">
+<div id="fig-539a35d47e664c97a50115a146a7f1bd-1" class="quarto-figure quarto-figure-center anchored" width="672">
+<figure class="quarto-float quarto-float-fig figure">
+<div>
+<img src="Algorithm1_files/figure-html/convergence-plots-1.png" id="fig-539a35d47e664c97a50115a146a7f1bd-1" class="img-fluid figure-img" width="672">
+</div>
+</figure>
+</div>
+</div>
+<div id="tabset-1-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-2-tab">
+<div id="fig-539a35d47e664c97a50115a146a7f1bd-2" class="quarto-figure quarto-figure-center anchored" width="672">
+<figure class="quarto-float quarto-float-fig figure">
+<div>
+<img src="Algorithm1_files/figure-html/convergence-plots-2.png" id="fig-539a35d47e664c97a50115a146a7f1bd-2" class="img-fluid figure-img" width="672">
+</div>
+</figure>
+</div>
+</div>
+<div id="tabset-1-3" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-3-tab">
+<div id="fig-539a35d47e664c97a50115a146a7f1bd-3" class="quarto-figure quarto-figure-center anchored" width="672">
+<figure class="quarto-float quarto-float-fig figure">
+<div>
+<img src="Algorithm1_files/figure-html/convergence-plots-3.png" id="fig-539a35d47e664c97a50115a146a7f1bd-3" class="img-fluid figure-img" width="672">
+</div>
+</figure>
+</div>
+</div>
+<div id="tabset-1-4" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-4-tab">
+<div id="fig-539a35d47e664c97a50115a146a7f1bd-4" class="quarto-figure quarto-figure-center anchored" width="672">
+<figure class="quarto-float quarto-float-fig figure">
+<div>
+<img src="Algorithm1_files/figure-html/convergence-plots-4.png" id="fig-539a35d47e664c97a50115a146a7f1bd-4" class="img-fluid figure-img" width="672">
+</div>
+</figure>
+</div>
+</div>
+<div id="tabset-1-5" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-5-tab">
+<div id="fig-539a35d47e664c97a50115a146a7f1bd-5" class="quarto-figure quarto-figure-center anchored" width="672">
+<figure class="quarto-float quarto-float-fig figure">
+<div>
+<img src="Algorithm1_files/figure-html/convergence-plots-5.png" id="fig-539a35d47e664c97a50115a146a7f1bd-5" class="img-fluid figure-img" width="672">
+</div>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Troubleshooting model convergence (hypothetical example)
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>If any of the models have not converged, you should not use the output of those models. Here’s an example of what the above plots might look like if the model has not converged for some dates. In the hypothetical example below, the <code>maxit</code> parameter should be increased for the dates with error code 1 and the model corresponding to the date which gave error code 10 should be explored– perhaps there is a lot of missing data or an error was made in the data cleaning step, resulting in extreme values. Note that the <code>L-BFGS-B</code> error codes will only show up if the optimization method is changed to <code>L-BFGS-B.</code></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>example <span class="ot">&lt;-</span> fits_rolling_KFAS <span class="sc">%&gt;%</span> dplyr<span class="sc">::</span><span class="fu">bind_rows</span>() <span class="sc">%&gt;%</span> dplyr<span class="sc">::</span><span class="fu">filter</span>(fit <span class="sc">==</span> <span class="st">"filter"</span> <span class="sc">&amp;</span> date <span class="sc">&gt;=</span> date_burnin <span class="sc">&amp;</span> name <span class="sc">==</span> <span class="st">"WWTP"</span>) </span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>example<span class="sc">$</span>conv[<span class="dv">25</span><span class="sc">:</span><span class="dv">31</span>] <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>example<span class="sc">$</span>conv[<span class="dv">45</span>] <span class="ot">&lt;-</span> <span class="dv">10</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>  ggplot2<span class="sc">::</span><span class="fu">ggplot</span>(example, <span class="fu">aes</span>(<span class="at">x =</span> date, <span class="at">y =</span> conv)) <span class="sc">+</span> </span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>                              ggplot2<span class="sc">::</span><span class="fu">geom_point</span>() <span class="sc">+</span> </span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>                              ggplot2<span class="sc">::</span><span class="fu">xlim</span>(<span class="fu">min</span>(example<span class="sc">$</span>date), <span class="fu">max</span>(example<span class="sc">$</span>date) <span class="sc">+</span> <span class="dv">100</span>) <span class="sc">+</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>                              ggplot2<span class="sc">::</span><span class="fu">geom_segment</span>(<span class="at">x =</span> <span class="fu">min</span>(example<span class="sc">$</span>date), <span class="at">xend =</span> <span class="fu">max</span>(example<span class="sc">$</span>date), <span class="at">y =</span> <span class="dv">0</span>, <span class="at">yend =</span> <span class="dv">0</span>) <span class="sc">+</span> </span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>                              ggplot2<span class="sc">::</span><span class="fu">annotate</span>(<span class="st">"text"</span>, <span class="at">x =</span> <span class="fu">max</span>(example<span class="sc">$</span>date) <span class="sc">+</span> <span class="dv">50</span>, <span class="at">y =</span> <span class="dv">0</span>, <span class="at">label =</span> <span class="st">"Converged"</span>)<span class="sc">+</span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>                              ggplot2<span class="sc">::</span><span class="fu">geom_segment</span>(<span class="at">x =</span> <span class="fu">min</span>(example<span class="sc">$</span>date), <span class="at">xend =</span> <span class="fu">max</span>(example<span class="sc">$</span>date), <span class="at">y =</span> <span class="dv">1</span>, <span class="at">yend =</span> <span class="dv">1</span>) <span class="sc">+</span> </span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>                              ggplot2<span class="sc">::</span><span class="fu">annotate</span>(<span class="st">"text"</span>, <span class="at">x =</span> <span class="fu">max</span>(example<span class="sc">$</span>date) <span class="sc">+</span> <span class="dv">50</span>, <span class="at">y =</span> <span class="dv">2</span>, <span class="at">label =</span> <span class="st">"maxit reached"</span>)<span class="sc">+</span></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>                              ggplot2<span class="sc">::</span><span class="fu">geom_segment</span>(<span class="at">x =</span> <span class="fu">min</span>(example<span class="sc">$</span>date), <span class="at">xend =</span> <span class="fu">max</span>(example<span class="sc">$</span>date), <span class="at">y =</span> <span class="dv">10</span>, <span class="at">yend =</span> <span class="dv">10</span>) <span class="sc">+</span> </span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>                              ggplot2<span class="sc">::</span><span class="fu">annotate</span>(<span class="st">"text"</span>, <span class="at">x =</span> <span class="fu">max</span>(example<span class="sc">$</span>date) <span class="sc">+</span> <span class="dv">55</span>, <span class="at">y =</span> <span class="dv">10</span>, <span class="at">label =</span> <span class="st">"Nelder-Mead </span><span class="sc">\n</span><span class="st"> degeneracy"</span>)<span class="sc">+</span></span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>                              ggplot2<span class="sc">::</span><span class="fu">geom_segment</span>(<span class="at">x =</span> <span class="fu">min</span>(example<span class="sc">$</span>date), <span class="at">xend =</span> <span class="fu">max</span>(example<span class="sc">$</span>date), <span class="at">y =</span> <span class="dv">51</span>, <span class="at">yend =</span> <span class="dv">51</span>) <span class="sc">+</span> </span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>                              ggplot2<span class="sc">::</span><span class="fu">annotate</span>(<span class="st">"text"</span>, <span class="at">x =</span> <span class="fu">max</span>(example<span class="sc">$</span>date) <span class="sc">+</span> <span class="dv">60</span>, <span class="at">y =</span> <span class="dv">50</span>, <span class="at">label =</span> <span class="st">"L-BFGS-B Warning"</span>)<span class="sc">+</span></span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>                              ggplot2<span class="sc">::</span><span class="fu">geom_segment</span>(<span class="at">x =</span> <span class="fu">min</span>(example<span class="sc">$</span>date), <span class="at">xend =</span> <span class="fu">max</span>(example<span class="sc">$</span>date), <span class="at">y =</span> <span class="dv">52</span>, <span class="at">yend =</span> <span class="dv">52</span>) <span class="sc">+</span> </span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>                              ggplot2<span class="sc">::</span><span class="fu">annotate</span>(<span class="st">"text"</span>, <span class="at">x =</span> <span class="fu">max</span>(example<span class="sc">$</span>date) <span class="sc">+</span> <span class="dv">65</span>, <span class="at">y =</span> <span class="dv">53</span>, <span class="at">label =</span> <span class="st">"L-BFGS-B Error"</span>) <span class="sc">+</span></span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a>                            ggplot2<span class="sc">::</span><span class="fu">ylab</span>(<span class="st">"Convergence Code"</span>)  </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div id="fig-539a35d47e664c97a50115a146a7f1bd-6" class="quarto-figure quarto-figure-center anchored" width="672">
+<figure class="quarto-float quarto-float-fig figure">
+<div>
+<img src="Algorithm1_files/figure-html/conv-example-1.png" id="fig-539a35d47e664c97a50115a146a7f1bd-6" class="img-fluid figure-img" width="672">
+</div>
+</figure>
+</div>
+</div>
+</div>
+<p>If <code>example</code> is the value of <code>online_estimates</code>for one location, the dates corresponding to models with convergence issues can be returned using the following code snippet.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>example <span class="sc">%&gt;%</span> dplyr<span class="sc">::</span><span class="fu">filter</span>(conv <span class="sc">&gt;</span><span class="dv">0</span>) <span class="sc">%&gt;%</span> dplyr<span class="sc">::</span><span class="fu">pull</span>(date, conv)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>           1            1            1            1            1            1 
+"2022-02-14" "2022-02-21" "2022-02-28" "2022-03-07" "2022-03-14" "2022-03-21" 
+           1           10 
+"2022-03-28" "2022-07-04" </code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="residuals" class="level3">
+<h3 class="anchored" data-anchor-id="residuals">Residuals</h3>
+<p>The visualization of the autocorrelation function (ACF) of the WWTP residuals demonstrates the residuals (observed value - filter estimate) of the state space model show a lack of temporal autocorrelation, meaning that the model adequately accounts for the temporal dependence in the WWTP series. For more on using ACF plots see Chapter 2 of ASTSA.</p>
+<p>In support of the conclusion from the ACF plot, the Portmanteau Ljung-Box test fails to reject the null hypothesis that the autocorrelations are not significantly different from 0, meaning there is no evidence to suggest the residuals are not independent.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>resid <span class="ot">&lt;-</span> fits_rolling_KFAS<span class="sc">$</span><span class="st">`</span><span class="at">WWTP</span><span class="st">`</span> <span class="sc">%&gt;%</span>  <span class="do">## just look at the WWTP</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>        dplyr<span class="sc">::</span><span class="fu">filter</span>(date <span class="sc">&gt;</span> date_burnin <span class="sc">&amp;</span> fit <span class="sc">==</span> <span class="st">"filter"</span>) <span class="sc">%&gt;%</span> <span class="do">## filter estimates beyond burnin</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>        dplyr<span class="sc">::</span><span class="fu">mutate</span>(<span class="at">resid =</span> obs<span class="sc">-</span>est) <span class="sc">%&gt;%</span> dplyr<span class="sc">::</span><span class="fu">pull</span>()<span class="co"># calcualte residual</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Ljung-Box test</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>LB_test <span class="ot">&lt;-</span> <span class="fu">Box.test</span>(resid, <span class="at">type =</span> <span class="st">"Ljung-Box"</span>)</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a><span class="co"># make acf plot</span></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a><span class="co">#resid %&gt;% acf1(main = "Autocorrleation plot for Resid = 69th St. Observed - 69th St. Filter", ylab="Autocorrelation") %&gt;% </span></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a><span class="co">#text(x = 1, y = .35, labels = paste("Portmanteau test p-value#: ", round(LB_test$p.value, 4)))</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Residual plots for all series
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>TS <span class="ot">&lt;-</span> fits_rolling_KFAS <span class="sc">%&gt;%</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">bind_rows</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">filter</span>(fit <span class="sc">==</span> <span class="st">"filter"</span> <span class="sc">&amp;</span> date <span class="sc">&gt;=</span> date_burnin <span class="sc">&amp;</span> name <span class="sc">==</span> <span class="st">"WWTP"</span>) </span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>resid_plots <span class="ot">&lt;-</span> fits_rolling_KFAS <span class="sc">%&gt;%</span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>                        dplyr<span class="sc">::</span><span class="fu">bind_rows</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>                        dplyr<span class="sc">::</span><span class="fu">filter</span>(fit <span class="sc">==</span> <span class="st">"filter"</span> <span class="sc">&amp;</span> date <span class="sc">&gt;=</span> date_burnin) <span class="sc">%&gt;%</span></span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>                        dplyr<span class="sc">::</span><span class="fu">group_nest</span>(name, <span class="at">keep =</span> T) <span class="sc">%&gt;%</span></span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>                        tibble<span class="sc">::</span><span class="fu">deframe</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>                        purrr<span class="sc">::</span><span class="fu">map</span>(., <span class="sc">~</span>{</span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>                          <span class="do">## impute missing values in .x$resid</span></span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>                          resid <span class="ot">=</span> zoo<span class="sc">::</span><span class="fu">na.approx</span>(.x<span class="sc">$</span>resid)</span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>                          <span class="co"># compute p-value</span></span>
+<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a>                          LB_test <span class="ot">&lt;-</span> stats<span class="sc">::</span><span class="fu">Box.test</span>(resid, <span class="at">type =</span> <span class="st">"Ljung-Box"</span>)</span>
+<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a>                          <span class="co"># create acf and pacf plots</span></span>
+<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a>                          acf <span class="ot">&lt;-</span> forecast<span class="sc">::</span><span class="fu">ggAcf</span>(resid, <span class="at">main =</span> <span class="fu">paste</span>(.x<span class="sc">$</span>name[<span class="dv">1</span>], <span class="st">": ACF"</span>))</span>
+<span id="cb18-18"><a href="#cb18-18" aria-hidden="true" tabindex="-1"></a>                          pacf <span class="ot">&lt;-</span> forecast<span class="sc">::</span><span class="fu">ggPacf</span>(resid, <span class="at">main =</span> <span class="fu">paste</span>(TS<span class="sc">$</span>name[<span class="dv">1</span>], <span class="st">": PACF"</span>))</span>
+<span id="cb18-19"><a href="#cb18-19" aria-hidden="true" tabindex="-1"></a>                          <span class="co"># output single visual for rendering in tabs</span></span>
+<span id="cb18-20"><a href="#cb18-20" aria-hidden="true" tabindex="-1"></a>                          acf <span class="sc">+</span> pacf <span class="sc">+</span> patchwork<span class="sc">::</span><span class="fu">plot_annotation</span>(<span class="at">title =</span> <span class="fu">paste</span>(<span class="st">"Portmanteu p-value: "</span>, <span class="fu">round</span>(LB_test<span class="sc">$</span>p.value, <span class="dv">4</span>)))</span>
+<span id="cb18-21"><a href="#cb18-21" aria-hidden="true" tabindex="-1"></a>                        })</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<section id="visuals-1" class="level4">
+<h4 class="anchored" data-anchor-id="visuals-1">Visuals</h4>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-2-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-1" role="tab" aria-controls="tabset-2-1" aria-selected="true">Lift station A</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-2-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-2" role="tab" aria-controls="tabset-2-2" aria-selected="false">Lift station B</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-2-3-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-3" role="tab" aria-controls="tabset-2-3" aria-selected="false">Lift station C</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-2-4-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-4" role="tab" aria-controls="tabset-2-4" aria-selected="false">Lift station D</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-2-5-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-5" role="tab" aria-controls="tabset-2-5" aria-selected="false">WWTP</a></li></ul>
+<div class="tab-content">
+<div id="tabset-2-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-2-1-tab">
+<div id="fig-539a35d47e664c97a50115a146a7f1bd-7" class="quarto-figure quarto-figure-center anchored" width="672">
+<figure class="quarto-float quarto-float-fig figure">
+<div>
+<img src="Algorithm1_files/figure-html/resid-plots-1.png" id="fig-539a35d47e664c97a50115a146a7f1bd-7" class="img-fluid figure-img" width="672">
+</div>
+</figure>
+</div>
+</div>
+<div id="tabset-2-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-2-2-tab">
+<div id="fig-539a35d47e664c97a50115a146a7f1bd-8" class="quarto-figure quarto-figure-center anchored" width="672">
+<figure class="quarto-float quarto-float-fig figure">
+<div>
+<img src="Algorithm1_files/figure-html/resid-plots-2.png" id="fig-539a35d47e664c97a50115a146a7f1bd-8" class="img-fluid figure-img" width="672">
+</div>
+</figure>
+</div>
+</div>
+<div id="tabset-2-3" class="tab-pane" role="tabpanel" aria-labelledby="tabset-2-3-tab">
+<div id="fig-539a35d47e664c97a50115a146a7f1bd-9" class="quarto-figure quarto-figure-center anchored" width="672">
+<figure class="quarto-float quarto-float-fig figure">
+<div>
+<img src="Algorithm1_files/figure-html/resid-plots-3.png" id="fig-539a35d47e664c97a50115a146a7f1bd-9" class="img-fluid figure-img" width="672">
+</div>
+</figure>
+</div>
+</div>
+<div id="tabset-2-4" class="tab-pane" role="tabpanel" aria-labelledby="tabset-2-4-tab">
+<div id="fig-539a35d47e664c97a50115a146a7f1bd-10" class="quarto-figure quarto-figure-center anchored" width="672">
+<figure class="quarto-float quarto-float-fig figure">
+<div>
+<img src="Algorithm1_files/figure-html/resid-plots-4.png" id="fig-539a35d47e664c97a50115a146a7f1bd-10" class="img-fluid figure-img" width="672">
+</div>
+</figure>
+</div>
+</div>
+<div id="tabset-2-5" class="tab-pane" role="tabpanel" aria-labelledby="tabset-2-5-tab">
+<div id="fig-539a35d47e664c97a50115a146a7f1bd-11" class="quarto-figure quarto-figure-center anchored" width="672">
+<figure class="quarto-float quarto-float-fig figure">
+<div>
+<img src="Algorithm1_files/figure-html/resid-plots-5.png" id="fig-539a35d47e664c97a50115a146a7f1bd-11" class="img-fluid figure-img" width="672">
+</div>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Why is lift station B showing significant autocorrelation?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>This is cold be due to a linear imputation of almost half of the missing values, which are missing in a big chunk.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>all_ts_observed <span class="sc">%&gt;%</span> dplyr<span class="sc">::</span><span class="fu">group_by</span>(name) <span class="sc">%&gt;%</span>dplyr<span class="sc">::</span><span class="fu">summarise</span>(<span class="at">missing =</span> <span class="fu">sum</span>(ts_missing), <span class="at">total =</span> <span class="fu">n</span>(), <span class="at">percent =</span> <span class="dv">100</span><span class="sc">*</span><span class="fu">sum</span>(ts_missing)<span class="sc">/</span><span class="fu">n</span>()) <span class="sc">%&gt;%</span> dplyr<span class="sc">::</span><span class="fu">arrange</span>(<span class="fu">desc</span>(percent))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 5 × 4
+  name           missing total percent
+  &lt;chr&gt;            &lt;int&gt; &lt;int&gt;   &lt;dbl&gt;
+1 Lift station B      42    95   44.2 
+2 Lift station A      28    95   29.5 
+3 Lift station D      18    95   18.9 
+4 Lift station C       9    95    9.47
+5 WWTP                 4    95    4.21</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</div>
+</section>
+</section>
+<section id="sec-step6" class="level2">
+<h2 class="anchored" data-anchor-id="sec-step6">6. Compare the variances</h2>
+<p>As mentioned above, the parameters we estimate in order to obtain the filters and smoothers above are the state and observation variance terms. The table below provides the estimate of the state and observation variances for the final time point of each series. The plots below visualize the estimates for each in time for each series.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>par_est_plots <span class="ot">&lt;-</span> fits_rolling_KFAS <span class="sc">%&gt;%</span> dplyr<span class="sc">::</span><span class="fu">bind_rows</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>                  dplyr<span class="sc">::</span><span class="fu">mutate</span>(<span class="at">colors =</span> <span class="fu">rep</span>(<span class="fu">c</span>(<span class="st">"#332288"</span>, <span class="st">"#AA4499"</span>,<span class="st">"#44AA99"</span>,<span class="st">"#88CCEE"</span>, <span class="st">"#DDCC77"</span>), <span class="at">each =</span> <span class="dv">95</span><span class="sc">*</span><span class="dv">2</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>                 dplyr<span class="sc">::</span><span class="fu">filter</span>(fit <span class="sc">==</span> <span class="st">"filter"</span> <span class="sc">&amp;</span> date <span class="sc">&gt;</span>date_burnin) <span class="sc">%&gt;%</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>                 tidyr<span class="sc">::</span><span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="fu">c</span>(<span class="st">"sigv"</span>, <span class="st">"sigw"</span>), <span class="at">names_to =</span> <span class="st">"par"</span>, <span class="at">values_to =</span> <span class="st">"var_est"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>                 dplyr<span class="sc">::</span><span class="fu">group_nest</span>(name, <span class="at">keep =</span> T) <span class="sc">%&gt;%</span></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>                 tibble<span class="sc">::</span><span class="fu">deframe</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>                 purrr<span class="sc">::</span><span class="fu">map</span>(., <span class="sc">~</span>{</span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>                    ggplot2<span class="sc">::</span><span class="fu">ggplot</span>(.x, <span class="fu">aes</span>(<span class="at">x =</span> date, <span class="at">y =</span> var_est, <span class="at">lty =</span> par)) <span class="sc">+</span> </span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>                      ggplot2<span class="sc">::</span><span class="fu">geom_line</span>(<span class="at">col =</span> .x<span class="sc">$</span>colors[<span class="dv">1</span>]) <span class="sc">+</span></span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>                      ggplot2<span class="sc">::</span><span class="fu">theme_minimal</span>() <span class="sc">+</span> </span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>                      ggplot2<span class="sc">::</span><span class="fu">scale_linetype_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="dv">4</span>,<span class="dv">1</span>), <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"Observation"</span>, <span class="st">"State"</span>))<span class="sc">+</span> </span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>                      ggplot2<span class="sc">::</span><span class="fu">labs</span>(<span class="at">linetype =</span> <span class="st">"Parameter"</span>, <span class="at">x =</span> <span class="st">"Date"</span>, <span class="at">y =</span> <span class="st">"Parameter estimate"</span>, <span class="at">title =</span> <span class="st">"Variance Estimates"</span>)</span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>                          <span class="co">#missing_dates_lwr &lt;- unique(.x$date[which(.x$ts_missing)])</span></span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>                  <span class="co">#missing_dates_upr &lt;- unique(.x$date[which(.x$ts_missing)+1])[1:length(missing_dates_lwr)]</span></span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a>                  <span class="co">#p+ geom_vline(xintercept = missing_dates_lwr)</span></span>
+<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a>                 }) </span>
+<span id="cb21-18"><a href="#cb21-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-19"><a href="#cb21-19" aria-hidden="true" tabindex="-1"></a><span class="do">## Final variance estimates</span></span>
+<span id="cb21-20"><a href="#cb21-20" aria-hidden="true" tabindex="-1"></a>fits_rolling_KFAS <span class="sc">%&gt;%</span> dplyr<span class="sc">::</span><span class="fu">bind_rows</span>() <span class="sc">%&gt;%</span> dplyr<span class="sc">::</span><span class="fu">filter</span>(fit <span class="sc">==</span> <span class="st">"filter"</span> <span class="sc">&amp;</span> date <span class="sc">==</span> <span class="st">"2023-03-13"</span>) <span class="sc">%&gt;%</span> dplyr<span class="sc">::</span><span class="fu">select</span>(name, sigv, sigw)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>            name       sigv       sigw
+1 Lift station A 0.04089099 0.01459850
+2 Lift station B 0.11938386 0.01280773
+3 Lift station C 0.26404292 0.01582208
+4 Lift station D 0.25942007 0.01751494
+5           WWTP 0.03758964 0.01055225</code></pre>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Variance visualizations
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-6" class="callout-6-contents callout-collapse collapse">
+<section id="visuals-2" class="level4 callout-body-container callout-body">
+<h4 class="anchored" data-anchor-id="visuals-2">Visuals</h4>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-3-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-3-1" role="tab" aria-controls="tabset-3-1" aria-selected="true">Lift station A</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-3-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-3-2" role="tab" aria-controls="tabset-3-2" aria-selected="false">Lift station B</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-3-3-tab" data-bs-toggle="tab" data-bs-target="#tabset-3-3" role="tab" aria-controls="tabset-3-3" aria-selected="false">Lift station C</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-3-4-tab" data-bs-toggle="tab" data-bs-target="#tabset-3-4" role="tab" aria-controls="tabset-3-4" aria-selected="false">Lift station D</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-3-5-tab" data-bs-toggle="tab" data-bs-target="#tabset-3-5" role="tab" aria-controls="tabset-3-5" aria-selected="false">WWTP</a></li></ul>
+<div class="tab-content">
+<div id="tabset-3-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-3-1-tab">
+<div id="fig-539a35d47e664c97a50115a146a7f1bd-12" class="quarto-figure quarto-figure-center anchored" width="672">
+<figure class="quarto-float quarto-float-fig figure">
+<div>
+<img src="Algorithm1_files/figure-html/variance-tabs-1.png" id="fig-539a35d47e664c97a50115a146a7f1bd-12" class="img-fluid figure-img" width="672">
+</div>
+</figure>
+</div>
+</div>
+<div id="tabset-3-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-3-2-tab">
+<div id="fig-539a35d47e664c97a50115a146a7f1bd-13" class="quarto-figure quarto-figure-center anchored" width="672">
+<figure class="quarto-float quarto-float-fig figure">
+<div>
+<img src="Algorithm1_files/figure-html/variance-tabs-2.png" id="fig-539a35d47e664c97a50115a146a7f1bd-13" class="img-fluid figure-img" width="672">
+</div>
+</figure>
+</div>
+</div>
+<div id="tabset-3-3" class="tab-pane" role="tabpanel" aria-labelledby="tabset-3-3-tab">
+<div id="fig-539a35d47e664c97a50115a146a7f1bd-14" class="quarto-figure quarto-figure-center anchored" width="672">
+<figure class="quarto-float quarto-float-fig figure">
+<div>
+<img src="Algorithm1_files/figure-html/variance-tabs-3.png" id="fig-539a35d47e664c97a50115a146a7f1bd-14" class="img-fluid figure-img" width="672">
+</div>
+</figure>
+</div>
+</div>
+<div id="tabset-3-4" class="tab-pane" role="tabpanel" aria-labelledby="tabset-3-4-tab">
+<div id="fig-539a35d47e664c97a50115a146a7f1bd-15" class="quarto-figure quarto-figure-center anchored" width="672">
+<figure class="quarto-float quarto-float-fig figure">
+<div>
+<img src="Algorithm1_files/figure-html/variance-tabs-4.png" id="fig-539a35d47e664c97a50115a146a7f1bd-15" class="img-fluid figure-img" width="672">
+</div>
+</figure>
+</div>
+</div>
+<div id="tabset-3-5" class="tab-pane" role="tabpanel" aria-labelledby="tabset-3-5-tab">
+<div id="fig-539a35d47e664c97a50115a146a7f1bd-16" class="quarto-figure quarto-figure-center anchored" width="672">
+<figure class="quarto-float quarto-float-fig figure">
+<div>
+<img src="Algorithm1_files/figure-html/variance-tabs-5.png" id="fig-539a35d47e664c97a50115a146a7f1bd-16" class="img-fluid figure-img" width="672">
+</div>
+</figure>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</div>
+</section>
+<section id="sec-step7" class="level2">
+<h2 class="anchored" data-anchor-id="sec-step7">7. Visualize estimates</h2>
+<section id="filter-estimates" class="level3">
+<h3 class="anchored" data-anchor-id="filter-estimates">Filter estimates</h3>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co">#state filter?</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">"Code/fplot.R"</span>)</span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a><span class="fu">load</span>(<span class="st">"Data/fits_rolling_KFAS"</span>)</span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a><span class="co"># plotting the smoothers for all the series</span></span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>filter_plots <span class="ot">&lt;-</span> fits_rolling_KFAS <span class="sc">%&gt;%</span> dplyr<span class="sc">::</span><span class="fu">bind_rows</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>          dplyr<span class="sc">::</span><span class="fu">mutate</span>(<span class="at">colors =</span> <span class="fu">rep</span>(<span class="fu">c</span>( <span class="st">"#AA4499"</span>,<span class="st">"#44AA99"</span>,<span class="st">"#88CCEE"</span>, <span class="st">"#DDCC77"</span>, <span class="st">"#332288"</span>), <span class="at">each =</span> <span class="dv">95</span><span class="sc">*</span><span class="dv">2</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>          dplyr<span class="sc">::</span><span class="fu">filter</span>(name <span class="sc">!=</span> <span class="st">"WWTP"</span> <span class="sc">&amp;</span> fit <span class="sc">==</span> <span class="st">"filter"</span> <span class="sc">&amp;</span> date <span class="sc">&gt;</span> date_burnin) <span class="sc">%&gt;%</span></span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a>          dplyr<span class="sc">::</span><span class="fu">group_nest</span>(name, <span class="at">keep =</span> T) <span class="sc">%&gt;%</span> </span>
+<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a>          tibble<span class="sc">::</span><span class="fu">deframe</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a>          purrr<span class="sc">::</span><span class="fu">map</span>(., <span class="sc">~</span> {</span>
+<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a>            plot.dat <span class="ot">&lt;-</span> dplyr<span class="sc">::</span><span class="fu">bind_rows</span>(dplyr<span class="sc">::</span><span class="fu">filter</span>(fits_rolling_KFAS<span class="sc">$</span><span class="st">`</span><span class="at">WWTP</span><span class="st">`</span>, fit <span class="sc">==</span> <span class="st">"filter"</span> <span class="sc">&amp;</span> date <span class="sc">&gt;</span> date_burnin), .x)</span>
+<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a>                        plot.dat<span class="sc">$</span>name <span class="ot">&lt;-</span> <span class="fu">factor</span>(plot.dat<span class="sc">$</span>name, <span class="fu">levels</span>(<span class="fu">factor</span>(plot.dat<span class="sc">$</span>name))[<span class="dv">2</span><span class="sc">:</span><span class="dv">1</span>])</span>
+<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a>            <span class="co">#fplot(f= plot.dat, title_char = "Comparison of filter estimates for two locations", line_colors = c( "#332288", .x$colors[1]))</span></span>
+<span id="cb23-17"><a href="#cb23-17" aria-hidden="true" tabindex="-1"></a>            ggplot2<span class="sc">::</span><span class="fu">ggplot</span>(plot.dat, <span class="fu">aes</span>(<span class="at">x =</span> date, <span class="at">y =</span> est, <span class="at">color =</span> name, <span class="at">fill =</span> name)) <span class="sc">+</span></span>
+<span id="cb23-18"><a href="#cb23-18" aria-hidden="true" tabindex="-1"></a>             ggplot2<span class="sc">::</span><span class="fu">geom_line</span>(<span class="at">linewidth=</span><span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb23-19"><a href="#cb23-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-20"><a href="#cb23-20" aria-hidden="true" tabindex="-1"></a>        ggplot2<span class="sc">::</span><span class="fu">theme_minimal</span>()<span class="sc">+</span></span>
+<span id="cb23-21"><a href="#cb23-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-22"><a href="#cb23-22" aria-hidden="true" tabindex="-1"></a>        ggplot2<span class="sc">::</span><span class="fu">geom_ribbon</span>(<span class="fu">aes</span>(<span class="at">ymin=</span>lwr,<span class="at">ymax=</span>upr),<span class="at">alpha=</span>.<span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb23-23"><a href="#cb23-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-24"><a href="#cb23-24" aria-hidden="true" tabindex="-1"></a>        ggplot2<span class="sc">::</span><span class="fu">scale_color_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"#332288"</span>, .x<span class="sc">$</span>colors[<span class="dv">1</span>])) <span class="sc">+</span></span>
+<span id="cb23-25"><a href="#cb23-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-26"><a href="#cb23-26" aria-hidden="true" tabindex="-1"></a>        ggplot2<span class="sc">::</span><span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="fu">paste</span>(<span class="st">"#332288"</span>, <span class="st">"50"</span>, <span class="at">sep =</span> <span class="st">""</span>), <span class="fu">paste</span>(.x<span class="sc">$</span>colors[<span class="dv">1</span>], <span class="st">"50"</span>, <span class="at">sep =</span> <span class="st">""</span>)), <span class="at">guide =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
+<span id="cb23-27"><a href="#cb23-27" aria-hidden="true" tabindex="-1"></a>                ggplot2<span class="sc">::</span><span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Comparison of filter estimates for two locations"</span>, <span class="at">x=</span> <span class="st">"Date"</span>, <span class="at">y =</span> <span class="st">"Log10 Copies/L-WW"</span>, <span class="at">color =</span> <span class="st">""</span>)</span>
+<span id="cb23-28"><a href="#cb23-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-29"><a href="#cb23-29" aria-hidden="true" tabindex="-1"></a>          })</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<section id="visualizations" class="level4">
+<h4 class="anchored" data-anchor-id="visualizations">Visualizations</h4>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-4-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-4-1" role="tab" aria-controls="tabset-4-1" aria-selected="true">Lift station A</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-4-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-4-2" role="tab" aria-controls="tabset-4-2" aria-selected="false">Lift station B</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-4-3-tab" data-bs-toggle="tab" data-bs-target="#tabset-4-3" role="tab" aria-controls="tabset-4-3" aria-selected="false">Lift station C</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-4-4-tab" data-bs-toggle="tab" data-bs-target="#tabset-4-4" role="tab" aria-controls="tabset-4-4" aria-selected="false">Lift station D</a></li></ul>
+<div class="tab-content">
+<div id="tabset-4-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-4-1-tab">
+<div id="fig-539a35d47e664c97a50115a146a7f1bd-17" class="quarto-figure quarto-figure-center anchored" width="672">
+<figure class="quarto-float quarto-float-fig figure">
+<div>
+<img src="Algorithm1_files/figure-html/filter-tabs-1.png" id="fig-539a35d47e664c97a50115a146a7f1bd-17" class="img-fluid figure-img" width="672">
+</div>
+</figure>
+</div>
+</div>
+<div id="tabset-4-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-4-2-tab">
+<div id="fig-539a35d47e664c97a50115a146a7f1bd-18" class="quarto-figure quarto-figure-center anchored" width="672">
+<figure class="quarto-float quarto-float-fig figure">
+<div>
+<img src="Algorithm1_files/figure-html/filter-tabs-2.png" id="fig-539a35d47e664c97a50115a146a7f1bd-18" class="img-fluid figure-img" width="672">
+</div>
+</figure>
+</div>
+</div>
+<div id="tabset-4-3" class="tab-pane" role="tabpanel" aria-labelledby="tabset-4-3-tab">
+<div id="fig-539a35d47e664c97a50115a146a7f1bd-19" class="quarto-figure quarto-figure-center anchored" width="672">
+<figure class="quarto-float quarto-float-fig figure">
+<div>
+<img src="Algorithm1_files/figure-html/filter-tabs-3.png" id="fig-539a35d47e664c97a50115a146a7f1bd-19" class="img-fluid figure-img" width="672">
+</div>
+</figure>
+</div>
+</div>
+<div id="tabset-4-4" class="tab-pane" role="tabpanel" aria-labelledby="tabset-4-4-tab">
+<div id="fig-539a35d47e664c97a50115a146a7f1bd-20" class="quarto-figure quarto-figure-center anchored" width="672">
+<figure class="quarto-float quarto-float-fig figure">
+<div>
+<img src="Algorithm1_files/figure-html/filter-tabs-4.png" id="fig-539a35d47e664c97a50115a146a7f1bd-20" class="img-fluid figure-img" width="672">
+</div>
+</figure>
+</div>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="smoother-estimates" class="level3">
+<h3 class="anchored" data-anchor-id="smoother-estimates">Smoother estimates</h3>
+<p>Like the filter estimates, the smoother estimates have a point estimate and uncertainty estimates visualized. The resulting estimates are indeed smoothed, since the entire series is used to estimate the model at each time point, so the periods of missing data are less pronounced. The 95% confidence bands appear wider for LS that had more missing data. The smoothed estimates are useful for retrospective analyses.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co">#state smoother?</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">"Code/fplot.R"</span>)</span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a><span class="co"># plotting the smoothers for all the series</span></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>smoother_plots <span class="ot">&lt;-</span> fits_rolling_KFAS <span class="sc">%&gt;%</span> dplyr<span class="sc">::</span><span class="fu">bind_rows</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>                  dplyr<span class="sc">::</span><span class="fu">mutate</span>(<span class="at">colors =</span> <span class="fu">rep</span>(<span class="fu">c</span>( <span class="st">"#AA4499"</span>,<span class="st">"#44AA99"</span>,<span class="st">"#88CCEE"</span>, <span class="st">"#DDCC77"</span>, <span class="st">"#332288"</span>), <span class="at">each =</span> <span class="dv">95</span><span class="sc">*</span><span class="dv">2</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>          dplyr<span class="sc">::</span><span class="fu">filter</span>(name <span class="sc">!=</span> <span class="st">"WWTP"</span> <span class="sc">&amp;</span> fit <span class="sc">==</span> <span class="st">"smoother"</span><span class="sc">&amp;</span> date <span class="sc">&gt;</span> date_burnin) <span class="sc">%&gt;%</span></span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>          dplyr<span class="sc">::</span><span class="fu">group_nest</span>(name, <span class="at">keep =</span> T) <span class="sc">%&gt;%</span> </span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>          tibble<span class="sc">::</span><span class="fu">deframe</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>          purrr<span class="sc">::</span><span class="fu">map</span>(., <span class="sc">~</span> {</span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a>            plot.dat <span class="ot">&lt;-</span> dplyr<span class="sc">::</span><span class="fu">bind_rows</span>(<span class="fu">filter</span>(fits_rolling_KFAS<span class="sc">$</span><span class="st">`</span><span class="at">WWTP</span><span class="st">`</span>, fit <span class="sc">==</span> <span class="st">"smoother"</span> <span class="sc">&amp;</span> date <span class="sc">&gt;</span> date_burnin), .x)</span>
+<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a>            plot.dat<span class="sc">$</span>name <span class="ot">&lt;-</span> <span class="fu">factor</span>(plot.dat<span class="sc">$</span>name, <span class="fu">levels</span>(<span class="fu">factor</span>(plot.dat<span class="sc">$</span>name))[<span class="dv">2</span><span class="sc">:</span><span class="dv">1</span>])</span>
+<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a>            <span class="fu">fplot</span>(<span class="at">f=</span> plot.dat, <span class="at">title_char =</span>  <span class="st">"Comparison of retrospective estimates for two locations"</span>, <span class="at">line_colors =</span> <span class="fu">c</span>(<span class="st">"#332288"</span>,.x<span class="sc">$</span>colors[<span class="dv">1</span>]))</span>
+<span id="cb24-15"><a href="#cb24-15" aria-hidden="true" tabindex="-1"></a>          })</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<section id="visualizations-1" class="level4">
+<h4 class="anchored" data-anchor-id="visualizations-1">Visualizations</h4>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-5-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-5-1" role="tab" aria-controls="tabset-5-1" aria-selected="true">Lift station A</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-5-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-5-2" role="tab" aria-controls="tabset-5-2" aria-selected="false">Lift station B</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-5-3-tab" data-bs-toggle="tab" data-bs-target="#tabset-5-3" role="tab" aria-controls="tabset-5-3" aria-selected="false">Lift station C</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-5-4-tab" data-bs-toggle="tab" data-bs-target="#tabset-5-4" role="tab" aria-controls="tabset-5-4" aria-selected="false">Lift station D</a></li></ul>
+<div class="tab-content">
+<div id="tabset-5-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-5-1-tab">
+<div id="fig-539a35d47e664c97a50115a146a7f1bd-21" class="quarto-figure quarto-figure-center anchored" width="672">
+<figure class="quarto-float quarto-float-fig figure">
+<div>
+<img src="Algorithm1_files/figure-html/smoother-tabs-1.png" id="fig-539a35d47e664c97a50115a146a7f1bd-21" class="img-fluid figure-img" width="672">
+</div>
+</figure>
+</div>
+</div>
+<div id="tabset-5-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-5-2-tab">
+<div id="fig-539a35d47e664c97a50115a146a7f1bd-22" class="quarto-figure quarto-figure-center anchored" width="672">
+<figure class="quarto-float quarto-float-fig figure">
+<div>
+<img src="Algorithm1_files/figure-html/smoother-tabs-2.png" id="fig-539a35d47e664c97a50115a146a7f1bd-22" class="img-fluid figure-img" width="672">
+</div>
+</figure>
+</div>
+</div>
+<div id="tabset-5-3" class="tab-pane" role="tabpanel" aria-labelledby="tabset-5-3-tab">
+<div id="fig-539a35d47e664c97a50115a146a7f1bd-23" class="quarto-figure quarto-figure-center anchored" width="672">
+<figure class="quarto-float quarto-float-fig figure">
+<div>
+<img src="Algorithm1_files/figure-html/smoother-tabs-3.png" id="fig-539a35d47e664c97a50115a146a7f1bd-23" class="img-fluid figure-img" width="672">
+</div>
+</figure>
+</div>
+</div>
+<div id="tabset-5-4" class="tab-pane" role="tabpanel" aria-labelledby="tabset-5-4-tab">
+<div id="fig-539a35d47e664c97a50115a146a7f1bd-24" class="quarto-figure quarto-figure-center anchored" width="672">
+<figure class="quarto-float quarto-float-fig figure">
+<div>
+<img src="Algorithm1_files/figure-html/smoother-tabs-4.png" id="fig-539a35d47e664c97a50115a146a7f1bd-24" class="img-fluid figure-img" width="672">
+</div>
+</figure>
+</div>
+</div>
+</div>
+</div>
+
+
+</section>
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        for (let i = 0; i < 2; i++) {
+          container.appendChild(note.children[i].cloneNode(true));
+        }
+        return container.innerHTML
+      } else {
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      return note.innerHTML;
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./index.html" class="pagination-link">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-title">Home</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./Algorithm2.html" class="pagination-link">
+        <span class="nav-page-text"><span class="chapter-title">Algorithm 2</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
