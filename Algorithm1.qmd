@@ -250,9 +250,9 @@ example %>% dplyr::filter(conv >0) %>% dplyr::pull(date, conv)
 
 ### Residuals
 
-The visualization of the autocorrelation function (ACF) of the WWTP residuals demonstrates the residuals (observed value - filter estimate) of the state space model show a lack of temporal autocorrelation, meaning that the model adequately accounts for the temporal dependence in the WWTP series. For more on using ACF plots see Chapter 2 of ASTSA.
+The visualization of the autocorrelation function (ACF) of the WWTP residuals demonstrates the (standardized) residuals (observed value - filter estimate) of the state space model show a lack of temporal autocorrelation, meaning that the model adequately accounts for the temporal dependence in the WWTP series. For more on using ACF plots see [Chapter 2 of Time Series: A Data Analysis Approach Using R](https://www.routledge.com/Time-Series-A-Data-Analysis-Approach-Using-R/Shumway-Stoffer/p/book/9780367221096).
 
-In support of the conclusion from the ACF plot, the Portmanteau Ljung-Box test fails to reject the null hypothesis that the autocorrelations are not significantly different from 0, meaning there is no evidence to suggest the residuals are not independent.
+In support of the conclusion from the ACF plot, for all but Lift station B, the Portmanteau Ljung-Box test fails to reject the null hypothesis that the autocorrelations are not significantly different from 0, meaning there is no evidence to suggest the residuals contain temporal dependence– so the time series structure of the wastewater series appears to have been adequately captured.
 
 ```{r}
 #| eval: true
@@ -273,7 +273,7 @@ LB_test <- Box.test(resid, type = "Ljung-Box")
 #text(x = 1, y = .35, labels = paste("Portmanteau test p-value#: ", round(LB_test$p.value, 4)))
 ```
 
-::: {.callout-note}
+::: callout-note
 ## Residual plots for all series
 
 ```{r}
@@ -329,11 +329,10 @@ purrr::iwalk(resid_plots, ~{
 })
 
 ```
-
-
 :::
+
 ::: {.callout-note collapse="true"}
-### Why is lift station B showing significant autocorrelation? 
+### Why is lift station B showing significant autocorrelation?
 
 This is cold be due to a linear imputation of almost half of the missing values, which are missing in a big chunk.
 
@@ -402,6 +401,8 @@ purrr::iwalk(par_est_plots, ~ {
 
 ### Filter estimates
 
+The filter estimates are the online estimates— those that use only the data up to the current time point. These are the estimates used in the EWMA charts in Algorithm 2.
+
 ```{r}
 #| code-fold: true
 #| message: false
@@ -465,7 +466,6 @@ Like the filter estimates, the smoother estimates have a point estimate and unce
 ```{r}
 #| code-fold: true
 #| label: smoother-visuals
-#state smoother?
 
 library(ggplot2)
 source("Code/fplot.R")

@@ -41,3 +41,9 @@ Intended audience: those who wish to replicate the analyses demonstrated here on
 
     -   Suggested external learning resource: [Forecasting: Principles and Practice 3E](https://otexts.com/fpp3/) by Rob J Hyndman and George Athanasopoulos.
 :::
+
+::: callout-note
+## Contact us!
+
+-   <https://hou-wastewater-epi.org/contact-us>
+:::
