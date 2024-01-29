@@ -631,8 +631,8 @@ Troubleshooting model convergence (hypothetical example)
 </section>
 <section id="residuals" class="level3">
 <h3 class="anchored" data-anchor-id="residuals">Residuals</h3>
-<p>The visualization of the autocorrelation function (ACF) of the WWTP residuals demonstrates the residuals (observed value - filter estimate) of the state space model show a lack of temporal autocorrelation, meaning that the model adequately accounts for the temporal dependence in the WWTP series. For more on using ACF plots see Chapter 2 of ASTSA.</p>
-<p>In support of the conclusion from the ACF plot, the Portmanteau Ljung-Box test fails to reject the null hypothesis that the autocorrelations are not significantly different from 0, meaning there is no evidence to suggest the residuals are not independent.</p>
+<p>The visualization of the autocorrelation function (ACF) of the WWTP residuals demonstrates the (standardized) residuals (observed value - filter estimate) of the state space model show a lack of temporal autocorrelation, meaning that the model adequately accounts for the temporal dependence in the WWTP series. For more on using ACF plots see <a href="https://www.routledge.com/Time-Series-A-Data-Analysis-Approach-Using-R/Shumway-Stoffer/p/book/9780367221096">Chapter 2 of Time Series: A Data Analysis Approach Using R</a>.</p>
+<p>In support of the conclusion from the ACF plot, for all but Lift station B, the Portmanteau Ljung-Box test fails to reject the null hypothesis that the autocorrelations are not significantly different from 0, meaning there is no evidence to suggest the residuals contain temporal dependence– so the time series structure of the wastewater series appears to have been adequately captured.</p>
 <div class="cell">
 <details>
 <summary>Code</summary>
@@ -877,6 +877,7 @@ Variance visualizations
 <h2 class="anchored" data-anchor-id="sec-step7">7. Visualize estimates</h2>
 <section id="filter-estimates" class="level3">
 <h3 class="anchored" data-anchor-id="filter-estimates">Filter estimates</h3>
+<p>The filter estimates are the online estimates— those that use only the data up to the current time point. These are the estimates used in the EWMA charts in Algorithm 2.</p>
 <div class="cell">
 <details>
 <summary>Code</summary>
@@ -962,21 +963,19 @@ Variance visualizations
 <div class="cell">
 <details>
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co">#state smoother?</span></span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
-<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">"Code/fplot.R"</span>)</span>
-<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a><span class="co"># plotting the smoothers for all the series</span></span>
-<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>smoother_plots <span class="ot">&lt;-</span> fits_rolling_KFAS <span class="sc">%&gt;%</span> dplyr<span class="sc">::</span><span class="fu">bind_rows</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>                  dplyr<span class="sc">::</span><span class="fu">mutate</span>(<span class="at">colors =</span> <span class="fu">rep</span>(<span class="fu">c</span>( <span class="st">"#AA4499"</span>,<span class="st">"#44AA99"</span>,<span class="st">"#88CCEE"</span>, <span class="st">"#DDCC77"</span>, <span class="st">"#332288"</span>), <span class="at">each =</span> <span class="dv">95</span><span class="sc">*</span><span class="dv">2</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>          dplyr<span class="sc">::</span><span class="fu">filter</span>(name <span class="sc">!=</span> <span class="st">"WWTP"</span> <span class="sc">&amp;</span> fit <span class="sc">==</span> <span class="st">"smoother"</span><span class="sc">&amp;</span> date <span class="sc">&gt;</span> date_burnin) <span class="sc">%&gt;%</span></span>
-<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>          dplyr<span class="sc">::</span><span class="fu">group_nest</span>(name, <span class="at">keep =</span> T) <span class="sc">%&gt;%</span> </span>
-<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>          tibble<span class="sc">::</span><span class="fu">deframe</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>          purrr<span class="sc">::</span><span class="fu">map</span>(., <span class="sc">~</span> {</span>
-<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a>            plot.dat <span class="ot">&lt;-</span> dplyr<span class="sc">::</span><span class="fu">bind_rows</span>(<span class="fu">filter</span>(fits_rolling_KFAS<span class="sc">$</span><span class="st">`</span><span class="at">WWTP</span><span class="st">`</span>, fit <span class="sc">==</span> <span class="st">"smoother"</span> <span class="sc">&amp;</span> date <span class="sc">&gt;</span> date_burnin), .x)</span>
-<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a>            plot.dat<span class="sc">$</span>name <span class="ot">&lt;-</span> <span class="fu">factor</span>(plot.dat<span class="sc">$</span>name, <span class="fu">levels</span>(<span class="fu">factor</span>(plot.dat<span class="sc">$</span>name))[<span class="dv">2</span><span class="sc">:</span><span class="dv">1</span>])</span>
-<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a>            <span class="fu">fplot</span>(<span class="at">f=</span> plot.dat, <span class="at">title_char =</span>  <span class="st">"Comparison of retrospective estimates for two locations"</span>, <span class="at">line_colors =</span> <span class="fu">c</span>(<span class="st">"#332288"</span>,.x<span class="sc">$</span>colors[<span class="dv">1</span>]))</span>
-<span id="cb24-15"><a href="#cb24-15" aria-hidden="true" tabindex="-1"></a>          })</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">"Code/fplot.R"</span>)</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="co"># plotting the smoothers for all the series</span></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>smoother_plots <span class="ot">&lt;-</span> fits_rolling_KFAS <span class="sc">%&gt;%</span> dplyr<span class="sc">::</span><span class="fu">bind_rows</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>                  dplyr<span class="sc">::</span><span class="fu">mutate</span>(<span class="at">colors =</span> <span class="fu">rep</span>(<span class="fu">c</span>( <span class="st">"#AA4499"</span>,<span class="st">"#44AA99"</span>,<span class="st">"#88CCEE"</span>, <span class="st">"#DDCC77"</span>, <span class="st">"#332288"</span>), <span class="at">each =</span> <span class="dv">95</span><span class="sc">*</span><span class="dv">2</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>          dplyr<span class="sc">::</span><span class="fu">filter</span>(name <span class="sc">!=</span> <span class="st">"WWTP"</span> <span class="sc">&amp;</span> fit <span class="sc">==</span> <span class="st">"smoother"</span><span class="sc">&amp;</span> date <span class="sc">&gt;</span> date_burnin) <span class="sc">%&gt;%</span></span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>          dplyr<span class="sc">::</span><span class="fu">group_nest</span>(name, <span class="at">keep =</span> T) <span class="sc">%&gt;%</span> </span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>          tibble<span class="sc">::</span><span class="fu">deframe</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>          purrr<span class="sc">::</span><span class="fu">map</span>(., <span class="sc">~</span> {</span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>            plot.dat <span class="ot">&lt;-</span> dplyr<span class="sc">::</span><span class="fu">bind_rows</span>(<span class="fu">filter</span>(fits_rolling_KFAS<span class="sc">$</span><span class="st">`</span><span class="at">WWTP</span><span class="st">`</span>, fit <span class="sc">==</span> <span class="st">"smoother"</span> <span class="sc">&amp;</span> date <span class="sc">&gt;</span> date_burnin), .x)</span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>            plot.dat<span class="sc">$</span>name <span class="ot">&lt;-</span> <span class="fu">factor</span>(plot.dat<span class="sc">$</span>name, <span class="fu">levels</span>(<span class="fu">factor</span>(plot.dat<span class="sc">$</span>name))[<span class="dv">2</span><span class="sc">:</span><span class="dv">1</span>])</span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a>            <span class="fu">fplot</span>(<span class="at">f=</span> plot.dat, <span class="at">title_char =</span>  <span class="st">"Comparison of retrospective estimates for two locations"</span>, <span class="at">line_colors =</span> <span class="fu">c</span>(<span class="st">"#332288"</span>,.x<span class="sc">$</span>colors[<span class="dv">1</span>]))</span>
+<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a>          })</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <section id="visualizations-1" class="level4">
