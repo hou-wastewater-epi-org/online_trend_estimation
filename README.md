@@ -2,6 +2,8 @@
 
 https://hou-wastewater-epi.org
 
+Tutorial Website: https://hou-wastewater-epi-org.github.io/online_trend_estimation/
+
 Contact email: info\@hou-wastewater-epi.org
 
 Paper: "Online trend estimation and detection of trend deviations in sub-sewershed time series of SARS-CoV-2 RNA measured in wastewater ."
