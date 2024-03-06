@@ -2,11 +2,14 @@
 
 https://hou-wastewater-epi.org
 
-Tutorial Website: https://hou-wastewater-epi-org.github.io/online_trend_estimation/
+Rendered Tutorial Website: https://hou-wastewater-epi-org.github.io/online_trend_estimation/
 
 Contact email: info\@hou-wastewater-epi.org
 
 Paper: "Online trend estimation and detection of trend deviations in sub-sewershed time series of SARS-CoV-2 RNA measured in wastewater ."
+-  Link to paper: https://www.nature.com/articles/s41598-024-56175-2
+-  To Cite:
+    - Ensor, K.B., Schedler, J.C., Sun, T. et al. Online trend estimation and detection of trend deviations in sub-sewershed time series of SARS-CoV-2 RNA measured in wastewater. Sci Rep 14, 5575 (2024). https://doi.org/10.1038/s41598-024-56175-2
 
 PI of Analytics Group: Dr. Katherine B. Ensor, Department of Statistics, Rice University
 
