@@ -2,7 +2,7 @@
 
 https://hou-wastewater-epi.org
 
-Rendered Tutorial Website: https://hou-wastewater-epi-org.github.io/online_trend_estimation/
+Tutorial/Vignette Website: https://hou-wastewater-epi-org.github.io/online_trend_estimation/
 
 Contact email: info\@hou-wastewater-epi.org
 
