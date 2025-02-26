@@ -7,7 +7,9 @@ title: Code + Synthetic Data for "Online trend estimation and detection of trend
 
 Katherine B. Ensor, Julia Schedler, Thomas Sun, Rebecca Schneider, Anthony Mulenga, Jingjing Wu, Lauren B. Stadler, Loren Hopkins
 
-medRxiv 2023.10.26.23297635; doi: [https://doi.org/10.1101/2023.10.26.23297635](https://doi.org/10.1101/2023.10.26.23297635https://doi.org/10.1101/2023.10.26.23297635)
+medRxiv 2023.10.26.23297635; doi: [https://doi.org/10.1038/s41598-024-56175-2
+](https://doi.org/10.1038/s41598-024-56175-2
+)
 :::
 
 This website provides details on the application of the state-space modeling and statistical process control frameworks to the time series of Sars-cov2 viral load for various sampling sites in the City of Houston.
