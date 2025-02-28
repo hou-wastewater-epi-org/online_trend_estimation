@@ -15,7 +15,7 @@ PI of Analytics Group: Dr. Katherine B. Ensor, Department of Statistics, Rice Un
 
 Lead Analyst for HHD: Rebecca Schneider, Houston Health Department
 
-Lead Analyst for Rice: Julia Schedler, Department of Statistics, Rice University
+Lead Analyst for Rice: Dr. Julia Schedler, Department of Statistics, Rice University
 
 ## Description
 
