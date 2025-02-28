@@ -19,7 +19,7 @@ Lead Analyst for Rice: Dr. Julia Schedler, Department of Statistics, Rice Univer
 
 ## Description
 
-Tutorials detailing Algorithms 1 and 2 in "Online trend estimation and detection of trend deviations in sub-sewershed time series of SARS-CoV-2 RNA measured in wastewater ." are provided in a rendered format here:
+Tutorials detailing Algorithms 1 and 2 in "Online trend estimation and detection of trend deviations in sub-sewershed time series of SARS-CoV-2 RNA measured in wastewater ." are provided in a rendered format here: https://hou-wastewater-epi-org.github.io/online_trend_estimation/
 
 ### Code
 
